@@ -59,7 +59,20 @@ header("Pragma: no-cache");
 				<div class="column">
 					<h3><?php echo $username; ?></h3>
 					<p>Date of birth: <?php echo $phenotypes['date-of-birth']; ?><br>
-					<?php echo ucfirst(lang($phenotypes['sex'])); ?>, <?php function r($v, $w) { if ($v != '') { $v .= ', '; } $v .= lang($w); return $v; } print array_reduce($phenotypes['ancestry'], 'r'); ?></p>
+					<?php echo ucfirst(lang($phenotypes['sex'])); ?>, <?php function r($v, $w) { if ($v != '') { $v .= ', '; } $v .= lang($w); return $v; } print array_reduce($phenotypes['ancestry'], 'r'); ?>
+
+					<br>
+					<form style="display: inline;" action="/results/nssnp_gff" method="post" id="form1">
+					<input type=hidden name="username" value="<?php echo htmlspecialchars($username);?>">
+					<input type=hidden name="password_hash" value="<?php echo $password_hash; ?>">
+					<a href="javascript:$('form1').submit();">Download non-synonymous SNPs</a>
+					</form>
+					<form style="display: inline;" action="/results/genotype_gff" method="post" id="form2">
+					<input type=hidden name="username" value="<?php echo htmlspecialchars($username);?>">
+					<input type=hidden name="password_hash" value="<?php echo $password_hash; ?>">
+					or <a href="javascript:$('form2').submit();">all source data</a>.
+					</form>
+					</p>
 				</div>
 				<div class="last column">
 					<p id="allele-frequency-legend" class="legend"><strong>Highlighting by allele frequency</strong><br>

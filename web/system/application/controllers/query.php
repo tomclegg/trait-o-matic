@@ -234,6 +234,80 @@ class Query extends Controller {
 			//TODO: make a confirmation page
 			$this->load->view('confirm');
 		}
+		else if ($this->input->post('submit-from-warehouse-form'))
+		{
+			// load the necessary modules
+			$this->load->library('form_validation');
+			$this->load->model('File', 'file', TRUE);
+			$this->load->model('Job', 'job', TRUE);
+
+			// validate the form
+			$this->form_validation->set_rules('genotype_locator', 'Genotype', 'required');
+			$this->form_validation->set_rules('phenotype_locator', 'Phenotype', 'required');
+
+			// bail if we've encountered errors
+			if (!$this->form_validation->run())
+			{
+				$data['genotype_locator'] = $this->input->post ('genotype_locator');
+				$data['coverage_locator'] = $this->input->post ('coverage_locator');
+				$data['phenotype_locator'] = $this->input->post ('phenotype_locator');
+				$this->load->view('genes', $data);
+				return;
+			}
+			
+			// insert a new job and retrieve its ID
+			$job = $this->job->insert();
+			$job_hash = hash('sha256', $job);
+			
+			// make a subdirectory for the job
+			$job_subdirectory = '/tmp/'.$job_hash;
+			if (!mkdir($job_subdirectory))
+			{
+				die ("Could not create directory: ".$job_subdirectory);
+				//TODO: error out
+			}
+
+			$genotype_path = $job_subdirectory.'/'.'genotype';
+
+			if (0 != exec("ln -s ''" . escapeshellarg($this->input->post('genotype_locator'))." ''".escapeshellarg($genotype_path)))
+			{
+				//TODO: error out
+			}
+			else
+			{
+				$this->file->insert(array('job' => $job, 'kind' => 'genotype', 'path' => $genotype_path));
+			}
+
+			$coverage_path = $job_subdirectory.'/'.'coverage';
+			if (!$this->input->post('coverage_locator') ||
+			    $this->input->post('coverage_locator') == 'warehouse:///')
+			{
+				// nothing to do
+			}
+			else if (!symlink($this->input->post('coverage_locator'), $coverage_path))
+			{
+				//TODO: error out
+			}
+			else
+			{
+				$this->file->insert(array('job' => $job, 'kind' => 'coverage', 'path' => $coverage_path));
+			}
+
+			$phenotype_path = $job_subdirectory.'/'.'phenotype';
+			if ($this->input->post('phenotype_locator') &&
+			    !symlink($this->input->post('phenotype_locator'), $phenotype_path))
+			{
+				//TODO: error out
+			}
+			else
+			{
+				$this->file->insert(array('job' => $job, 'kind' => 'phenotype', 'path' => $phenotype_path));
+			}
+			
+			// now move on to the next stage
+			$data['job'] = $job;
+			$this->load->view('signup', $data);
+		}
 		// nothing to process: show the first page
 		else
 		{

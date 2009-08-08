@@ -1,6 +1,6 @@
 <?php
 
-function warehouse_link_fetch ($path)
+function warehouse_fetch ($path)
 {
 	if (is_link ($path) && ereg("^warehouse://", readlink($path))) {
 		return shell_exec ("whget ''".escapeshellarg($path)." -");

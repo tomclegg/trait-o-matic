@@ -12,7 +12,7 @@ usage: %prog [options]
 # ---
 # This code is part of the Trait-o-matic project and is governed by its license.
 
-import base64, hashlib, os, shutil, subprocess, sys, urllib, urllib2
+import base64, hashlib, os, shutil, subprocess, sys, urllib, urllib2, re
 from SimpleXMLRPCServer import SimpleXMLRPCServer as xrs
 from tempfile import mkstemp
 from utils import doc_optparse
@@ -85,6 +85,13 @@ def main():
 		# execute script
 		script_dir = os.path.dirname(sys.argv[0])
 		output_dir = os.path.dirname(genotype_file)
+
+		# fetch from warehouse if genotype file is speecial symlink
+		fetch_command = "cat"
+		if os.path.islink(genotype_file):
+			if re.match('warehouse://.*', os.readlink(genotype_file)):
+				fetch_command = "whget"
+
 		# letters refer to scripts; numbers refer to outputs
 		args = { 'A': os.path.join(script_dir, "gff_twobit_query.py"),
 		         'B': os.path.join(script_dir, "gff_dbsnp_query.py"),
@@ -96,6 +103,7 @@ def main():
 		         'H': os.path.join(script_dir, "json_allele_frequency_query.py"),
 		         'Z': os.path.join(script_dir, "server.py"),
 		         'in': genotype_file,
+			 'fetch': fetch_command,
 		         'reference': REFERENCE_GENOME,
 		         'url': trackback_url,
 		         'token': request_token,
@@ -109,7 +117,7 @@ def main():
 		         '8': "",
 		         '0': os.path.join(output_dir, "README") }
 		cmd = '''(
-		python '%(A)s' '%(in)s' '%(reference)s' > '%(1)s'
+		%(fetch)s '%(in)s' | tee /tmp/gff | python '%(A)s' '%(reference)s' /dev/stdin > '%(1)s'
 		python '%(B)s' '%(1)s' > '%(2)s'
 		python '%(C)s' '%(2)s' '%(reference)s' > '%(3)s'
 		python '%(D)s' '%(3)s' > '%(4)s'

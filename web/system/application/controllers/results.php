@@ -260,6 +260,7 @@ class Results extends Controller {
 		$this->load->helper('json');
 		$this->load->helper('language');
 		$this->load->helper('url');
+		$this->load->helper('warehouse');
 		// load strings for phenotypes
 		$this->lang->load('phenotype');
 		
@@ -287,7 +288,7 @@ class Results extends Controller {
 		// read user-submitted phenotypes and append to data
 		$phenotype_file = $this->file->get(array('kind' => 'phenotype', 'job' => $most_recent_job['id']), 1);
 		$phenotype_path = $phenotype_file['path'];
-		$data['phenotypes'] = get_object_vars(json_decode(read_file($phenotype_path)));
+		$data['phenotypes'] = get_object_vars(json_decode(warehouse_fetch($phenotype_path)));
 		//TODO: error out if no file is found
 		
 		// read results

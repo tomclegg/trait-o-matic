@@ -166,7 +166,9 @@ def main():
 
 		# if copying is required, fork a child process and return now
 		if os.fork() > 0:
+			# wait for intermediate proc to fork & exit
 			os.wait()
+			# return existing locator if available
 			if os.path.islink(source_file + '-locator'):
 				return os.readlink(source_file + '-locator')
 			return ''
@@ -187,12 +189,12 @@ def main():
 		if ret == None:
 			ret = whput.wait
 		if ret == 0:
-			locator = locator.strip()
-			if not os.path.islink(source_file + '-locator'):
-				try:
-					os.symlink(locator, source_file + '-locator')
-				except OSError:
-					print >> sys.stderr, 'Ignoring error creating symlink ' + source_file + '-locator'
+			locator = 'warehouse:///' + locator.strip() + '/' + target_filename
+			try:
+				os.symlink(locator, source_file + '-locator.tmp')
+				os.rename(source_file + '-locator.tmp', source_file + '-locator')
+			except OSError:
+				print >> sys.stderr, 'Ignoring error creating symlink ' + source_file + '-locator'
 			if trackback_url:
 				subprocess.call("python '%(Z)s' -t '%(url)s' '%(out)s' '%(source)s' '%(token)s'"
 						% { 'Z': os.path.join (script_dir, "server.py"),

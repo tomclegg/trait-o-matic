@@ -28,6 +28,9 @@ class Results extends Controller {
 		// load necessary modules
 		$this->load->model('Job', 'job', TRUE);
 		$this->load->model('User', 'user', TRUE);
+		$this->load->model('File', 'file', TRUE);
+		$this->load->library('xmlrpc');
+		$this->config->load('trait-o-matic');
 
 		// keep track of what permissions we're setting
 		$job_public_mode_symbol = $this->uri->rsegment(3);
@@ -80,6 +83,28 @@ class Results extends Controller {
 		
 		// now actually do some work!
 		$this->job->update(array('public' => $job_public_mode), array('id' => $job));
+		if ($job_public_mode > 0 &&
+		    $this->config->item ("enable_warehouse_storage"))
+		{
+			$path = array();
+			foreach (array ('genotype', 'coverage', 'phenotype') as $kind) {
+				$file = $this->file->get(array('kind' => $kind, 'job' => $job), 1);
+				if ($file && $file['path'])
+					$path[$kind] = $file['path'];
+				else
+					$path[$kind] = '';
+			}
+			//TODO: move server address into a config file
+			$this->xmlrpc->server('http://localhost/', 8080);
+			$this->xmlrpc->method('copy_to_warehouse');
+			$request = array($path['genotype'], $path['coverage'], $path['phenotype'], '', '', TRUE);
+			$this->xmlrpc->request($request);
+			if (!$this->xmlrpc->send_request())
+			{
+				// echo $this->xmlrpc->display_error();
+				//TODO: error out, with some sort of interface
+			}
+		}
 		$this->load->view('confirm_chmod');
 	}
 	
@@ -261,6 +286,7 @@ class Results extends Controller {
 		$this->load->helper('language');
 		$this->load->helper('url');
 		$this->load->helper('warehouse');
+		$this->config->load('trait-o-matic');
 		// load strings for phenotypes
 		$this->lang->load('phenotype');
 		
@@ -296,7 +322,27 @@ class Results extends Controller {
 		$data['phenotypes']['snpedia'] = $this->_load_output_data('snpedia', $most_recent_job['id']);
 		$data['phenotypes']['hgmd'] = $this->_load_output_data('hgmd', $most_recent_job['id']);
 		$data['phenotypes']['morbid'] = $this->_load_output_data('morbid', $most_recent_job['id']);
-				
+
+		if ($this->config->item('enable_warehouse_storage'))
+		{
+			// get warehouse locators if available
+			foreach (array ('genotype', 'coverage', 'phenotype') as $kind)
+			{
+				$data_file = $this->file->get(array('kind' => $kind, 'job' => $most_recent_job['id']), 1);
+				if (!($data_file &&
+				      $data_file['path'] &&
+				      ($data_path = $data_file['path'])))
+					continue;
+				else if (is_link($data_path) &&
+					 ereg ("^warehouse://", ($locator = readlink($data_path))))
+					$data["locator"][$kind] = $locator;
+				else if (is_link($data_path."-locator"))
+					$data["locator"][$kind] = readlink($data_path."-locator");
+				else if (file_exists($data_path))
+					$data["locator"][$kind] = "";
+			}
+		}
+
 		//TODO: set session variable, if necessary
 		$this->load->view('results', $data);
 	}

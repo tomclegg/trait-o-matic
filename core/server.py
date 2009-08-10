@@ -86,7 +86,7 @@ def main():
 		script_dir = os.path.dirname(sys.argv[0])
 		output_dir = os.path.dirname(genotype_file)
 
-		# fetch from warehouse if genotype file is speecial symlink
+		# fetch from warehouse if genotype file is special symlink
 		fetch_command = "cat"
 		if os.path.islink(genotype_file):
 			if re.match('warehouse://.*', os.readlink(genotype_file)):
@@ -135,6 +135,73 @@ def main():
 		subprocess.call(cmd, shell=True)
 		return output_dir
 	server.register_function(submit_local)
+	
+	def copy_to_warehouse(genotype_file, coverage_file, phenotype_file, trackback_url='', request_token='', recopy=True):
+		# execute script
+		script_dir = os.path.dirname(sys.argv[0])
+		output_dir = os.path.dirname(genotype_file)
+
+		g_locator = _copy_file_to_warehouse (genotype_file, "genotype.gff")
+		c_locator = _copy_file_to_warehouse (coverage_file, "coverage")
+		p_locator = _copy_file_to_warehouse (phenotype_file, "phenotype.json")
+		if (g_locator != None and
+		    c_locator != None and
+		    p_locator != None):
+			return (g_locator, c_locator, p_locator)
+		return None
+	server.register_function(copy_to_warehouse)
+
+	def _copy_file_to_warehouse (source_file, target_filename=None, trackback_url=None, recopy=True):
+		if not source_file:
+			return ''
+
+		# if file is special symlink, return link target
+		if os.path.islink(source_file):
+			if re.match('warehouse://.*', os.readlink(source_file)):
+				return os.readlink(source_file)
+
+		# if file has already been copied to warehouse, do not recopy
+		if not recopy and os.path.islink(source_file + '-locator'):
+			return os.readlink(source_file + '-locator')
+
+		# if copying is required, fork a child process and return now
+		if os.fork() > 0:
+			os.wait()
+			if os.path.islink(source_file + '-locator'):
+				return os.readlink(source_file + '-locator')
+			return ''
+
+		# double-fork avoids accumulating zombie child processes
+		if os.fork() > 0:
+			os._exit(0)
+
+		if not target_filename:
+			target_filename = os.path.basename (source_file)
+		whput = subprocess.Popen(["whput",
+					  "--in-manifest",
+					  "--use-filename=%s" % target_filename,
+					  source_file],
+					 stdout=subprocess.PIPE)
+		(locator, errors) = whput.communicate()
+		ret = whput.returncode
+		if ret == None:
+			ret = whput.wait
+		if ret == 0:
+			locator = locator.strip()
+			if not os.path.islink(source_file + '-locator'):
+				try:
+					os.symlink(locator, source_file + '-locator')
+				except OSError:
+					print >> sys.stderr, 'Ignoring error creating symlink ' + source_file + '-locator'
+			if trackback_url:
+				subprocess.call("python '%(Z)s' -t '%(url)s' '%(out)s' '%(source)s' '%(token)s'"
+						% { 'Z': os.path.join (script_dir, "server.py"),
+						    'url': trackback_url,
+						    'out': locator,
+						    'source': source_file,
+						    'token': request_token })
+			os._exit(0)
+		os._exit(1)
 	
 	# run the server's main loop
 	server.serve_forever()

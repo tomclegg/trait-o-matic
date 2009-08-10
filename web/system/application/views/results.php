@@ -66,7 +66,7 @@ header("Pragma: no-cache");
     if (!isset($locator[$kind]))
       ;
     else if ($locator[$kind] == "")
-      print (($public || $job_public_mode == 1) ? "<br />Sharing URL for $kind: N/A" : "");
+      print $public ? "" : "<br />Warehouse locator for $kind: N/A";
     else
       print "<br />Warehouse locator for $kind: <a href=\"".$locator[$kind]."\">".preg_replace("{.*/([0-9a-f]{8})[0-9a-f]{24}.*}", "\$1...", $locator[$kind])."</a> (right-click to copy)";
   endforeach;

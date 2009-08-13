@@ -10,4 +10,14 @@ function warehouse_fetch ($path)
 	}
 }
 
+function warehouse_readfile ($path)
+{
+	if (is_link ($path) && ereg("^warehouse://", readlink($path))) {
+		passthru ("whget ''".escapeshellarg($path)." -");
+	}
+	else {
+		readfile ($path);
+	}
+}
+
 ?>

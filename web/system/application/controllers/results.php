@@ -250,6 +250,7 @@ class Results extends Controller {
 		$this->load->helper('file');
 		$this->load->helper('json');
 		$this->load->helper('language');
+		$this->load->helper('warehouse');
 		
 		// grab the appropriate file
 		//TODO: kind of a hack for "ns"
@@ -261,17 +262,33 @@ class Results extends Controller {
 			$data_file_path = dirname($data_file['path']) . "/ns.gff";
 		else
 			$data_file_path = $data_file['path'];
-		
-		// set unique file name based on hash, preserving the extension
-		// (note the use of $data_file_path and $data_file['path'], the
-		// latter of which allows the retrieved "ns" file to use the
-		// "genotype" file's extension)
-		$filename = hash_file('sha256', $data_file_path) . '.' . pathinfo($data_file['path'], PATHINFO_EXTENSION);
+
+		if (is_link ($data_file_path) &&
+		    ereg("^warehouse://[^/]*/([0-9a-f]+)", readlink($data_file_path), $matches))
+		{
+			// set unique filename based on locator if the
+			// desired data file is a symlink to a
+			// warehouse locator
+
+			$ext = pathinfo(readlink($data_file_path), PATHINFO_EXTENSION);
+			$filename = $matches[1] . "." . $ext;
+		}
+		else
+		{
+			// set unique file name based on hash,
+			// preserving the extension (note the use of
+			// $data_file_path and $data_file['path'], the
+			// latter of which allows the retrieved "ns"
+			// file to use the "genotype" file's
+			// extension)
+
+			$filename = hash_file('sha256', $data_file_path) . '.' . pathinfo($data_file['path'], PATHINFO_EXTENSION);
+		}
 		
 		// force download
 		header("Content-type: text/plain");
 		header("Content-disposition: attachment; filename=\"{$filename}\"");
-		readfile($data_file_path);
+		warehouse_readfile($data_file_path);
 	}
 	
 	// note that invoking this function incorrectly may permit bypassing

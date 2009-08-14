@@ -1,0 +1,15 @@
+* System requirements
+
+MySQL tables (/var/lib/mysql) : 3GB
+Data (~trait) : 4GB
+OS: Ubuntu Hardy (8.04)
+Memory: 256MB
+
+* Installation
+
+** Create user 'trait'
+** git clone git://github.com/xwu/trait-o-matic.git
+** cd trait-o-matic/script
+** sudo ./prereqs-ubuntu.sh
+** ./setup.sh
+** ./install-external-data.sh

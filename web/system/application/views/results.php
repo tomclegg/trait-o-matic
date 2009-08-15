@@ -258,6 +258,7 @@ endforeach;
 			</div>
 		</div>
 	</div></div>
+<!-- processed <?php echo $processed ?> -->
 	<div id="foot"><div>
 		<div id="copyright">
 			<p>

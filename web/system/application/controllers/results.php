@@ -333,6 +333,8 @@ class Results extends Controller {
 		$phenotype_path = $phenotype_file['path'];
 		$data['phenotypes'] = get_object_vars(json_decode(warehouse_fetch($phenotype_path)));
 		//TODO: error out if no file is found
+
+		$data['processed'] = $most_recent_job['processed'];
 		
 		// read results
 		$data['phenotypes']['omim'] = $this->_load_output_data('omim', $most_recent_job['id']);

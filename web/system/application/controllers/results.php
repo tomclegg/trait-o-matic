@@ -158,6 +158,8 @@ class Results extends Controller {
 		$phenotype_path = $phenotype_file['path'];
 		$data['phenotypes'] = get_object_vars(json_decode(read_file($phenotype_path)));
 		//TODO: error out if no file is found
+
+		$data['processed'] = $most_recent_job['processed'];
 		
 		// read results
 		$job_dir = basename(dirname($phenotype_path));

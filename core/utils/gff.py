@@ -62,7 +62,10 @@ def _gff_iterator(f, version=DEFAULT_GFF_VERSION):
 	Deep parser that returns information in GFFRecord format; faithful to the textual
 	representation, (start, end) is one-based and inclusive.
 	"""
+	linenumber = 0
 	for line in f:
+		linenumber += 1
+
 		# parse comments
 		if line.startswith('#'):
 			# do nothing unless it's meta
@@ -99,13 +102,13 @@ def _gff_iterator(f, version=DEFAULT_GFF_VERSION):
 			break
 		# otherwise, raise an exception if we don't have the minimum number of fields
 		if len(l) < 8:
-			raise Exception("insufficient fields")
+			raise Exception("insufficient fields at line %d" % linenumber)
 		
 		# sanity check on start and end
 		start = long(l[3])
 		end = long(l[4])
 		if end < start:
-			raise Exception("end before start (%s,%s)" % (start, end))
+			raise Exception("end before start (%s,%s) at line %d" % (start, end, linenumber))
 			
 		# convert score to float
 		score = l[5]

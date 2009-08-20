@@ -42,5 +42,17 @@ function _load(event) {
 	}
 }
 
+function genes_forms_showhide()
+{
+    if ($('datasource-warehouse').checked) {
+	$('from-warehouse-form').style.display='inline';
+	$('gene-form').style.display='none';
+    } else {
+	$('from-warehouse-form').style.display='none';
+	$('gene-form').style.display='inline';
+    }
+    return true;
+}
+
 Event.observe(window, "load", _load);
 Event.observe(document, "ajax:update", _load);

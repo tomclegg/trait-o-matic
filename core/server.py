@@ -12,7 +12,7 @@ usage: %prog [options]
 # ---
 # This code is part of the Trait-o-matic project and is governed by its license.
 
-import base64, hashlib, os, shutil, subprocess, sys, urllib, urllib2
+import base64, hashlib, os, shutil, subprocess, sys, urllib, urllib2, re
 from SimpleXMLRPCServer import SimpleXMLRPCServer as xrs
 from tempfile import mkstemp
 from utils import doc_optparse
@@ -85,6 +85,13 @@ def main():
 		# execute script
 		script_dir = os.path.dirname(sys.argv[0])
 		output_dir = os.path.dirname(genotype_file)
+
+		# fetch from warehouse if genotype file is special symlink
+		fetch_command = "cat"
+		if os.path.islink(genotype_file):
+			if re.match('warehouse://.*', os.readlink(genotype_file)):
+				fetch_command = "whget"
+
 		# letters refer to scripts; numbers refer to outputs
 		args = { 'A': os.path.join(script_dir, "gff_twobit_query.py"),
 		         'B': os.path.join(script_dir, "gff_dbsnp_query.py"),
@@ -97,6 +104,7 @@ def main():
 		         'I': os.path.join(script_dir, "json_to_job_database.py"),
 		         'Z': os.path.join(script_dir, "server.py"),
 		         'in': genotype_file,
+			 'fetch': fetch_command,
 		         'reference': REFERENCE_GENOME,
 		         'url': trackback_url,
 		         'token': request_token,
@@ -110,7 +118,7 @@ def main():
 		         '8': "",
 		         '0': os.path.join(output_dir, "README") }
 		cmd = '''(
-		python '%(A)s' '%(in)s' '%(reference)s' > '%(1)s'
+		%(fetch)s '%(in)s' | tee /tmp/gff | python '%(A)s' '%(reference)s' /dev/stdin > '%(1)s'
 		python '%(B)s' '%(1)s' > '%(2)s'
 		python '%(C)s' '%(2)s' '%(reference)s' > '%(3)s'
 		python '%(D)s' '%(3)s' > '%(4)s'
@@ -129,6 +137,75 @@ def main():
 		subprocess.call(cmd, shell=True)
 		return output_dir
 	server.register_function(submit_local)
+	
+	def copy_to_warehouse(genotype_file, coverage_file, phenotype_file, trackback_url='', request_token='', recopy=True):
+		# execute script
+		script_dir = os.path.dirname(sys.argv[0])
+		output_dir = os.path.dirname(genotype_file)
+
+		g_locator = _copy_file_to_warehouse (genotype_file, "genotype.gff")
+		c_locator = _copy_file_to_warehouse (coverage_file, "coverage")
+		p_locator = _copy_file_to_warehouse (phenotype_file, "phenotype.json")
+		if (g_locator != None and
+		    c_locator != None and
+		    p_locator != None):
+			return (g_locator, c_locator, p_locator)
+		return None
+	server.register_function(copy_to_warehouse)
+
+	def _copy_file_to_warehouse (source_file, target_filename=None, trackback_url=None, recopy=True):
+		if not source_file:
+			return ''
+
+		# if file is special symlink, return link target
+		if os.path.islink(source_file):
+			if re.match('warehouse://.*', os.readlink(source_file)):
+				return os.readlink(source_file)
+
+		# if file has already been copied to warehouse, do not recopy
+		if not recopy and os.path.islink(source_file + '-locator'):
+			return os.readlink(source_file + '-locator')
+
+		# if copying is required, fork a child process and return now
+		if os.fork() > 0:
+			# wait for intermediate proc to fork & exit
+			os.wait()
+			# return existing locator if available
+			if os.path.islink(source_file + '-locator'):
+				return os.readlink(source_file + '-locator')
+			return ''
+
+		# double-fork avoids accumulating zombie child processes
+		if os.fork() > 0:
+			os._exit(0)
+
+		if not target_filename:
+			target_filename = os.path.basename (source_file)
+		whput = subprocess.Popen(["whput",
+					  "--in-manifest",
+					  "--use-filename=%s" % target_filename,
+					  source_file],
+					 stdout=subprocess.PIPE)
+		(locator, errors) = whput.communicate()
+		ret = whput.returncode
+		if ret == None:
+			ret = whput.wait
+		if ret == 0:
+			locator = 'warehouse:///' + locator.strip() + '/' + target_filename
+			try:
+				os.symlink(locator, source_file + '-locator.tmp')
+				os.rename(source_file + '-locator.tmp', source_file + '-locator')
+			except OSError:
+				print >> sys.stderr, 'Ignoring error creating symlink ' + source_file + '-locator'
+			if trackback_url:
+				subprocess.call("python '%(Z)s' -t '%(url)s' '%(out)s' '%(source)s' '%(token)s'"
+						% { 'Z': os.path.join (script_dir, "server.py"),
+						    'url': trackback_url,
+						    'out': locator,
+						    'source': source_file,
+						    'token': request_token })
+			os._exit(0)
+		os._exit(1)
 	
 	# run the server's main loop
 	server.serve_forever()

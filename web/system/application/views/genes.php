@@ -68,6 +68,17 @@ endif;
 <?php if (isset($error)): ?>
 					<div class="error"><?php foreach ($error as $e): ?><div><?php echo $e; ?></div><?php endforeach; ?></div>
 <?php endif; ?>
+<?php $this->config->load('trait-o-matic');
+      if ($this->config->item('enable_warehouse_storage')) {
+ ?>
+
+<form id="datasource-form">
+<input type="radio" name="datasource" value="browser" id="datasource-browser" onchange="genes_forms_showhide()" checked /> Upload files from your browser
+<br />
+<input type="radio" name="datasource" value="warehouse" id="datasource-warehouse" onchange="genes_forms_showhide()" /> Use shared data from the warehouse
+</form>
+
+<?php } ?>
 					<form enctype="multipart/form-data" name="gene-form" id="gene-form" method="POST" action="/query/">
 						<div class="wrapper">
 							<p><label class="label">Genotype<br>
@@ -77,6 +88,19 @@ endif;
 						</div>
 						<p class="submit"><span class="label"></span><input type="submit" name="submit-gene-form" id="submit-gene-form" value="Next &raquo;"></p>
 					</form>
+<?php if ($this->config->item('enable_warehouse_storage')) { ?>
+					<form name="from-warehouse-form" id="from-warehouse-form" method="POST" action="/query/" style="display: none;">
+						<div class="wrapper">
+							<p><label class="label">Genotype<br>
+							<input type="text" class="wide text" name="genotype_locator" id="genotype" value="warehouse:///"></label></p>
+							<p><label class="label">Coverage<span class="description"> (optional)</span><br>
+							<input type="text" class="wide text" name="coverage_locator" id="coverage" value="warehouse:///"></label></p>
+							<p><label class="label">Phenotype/profile</span><br>
+							<input type="text" class="wide text" name="phenotype_locator" id="phenotype" value="warehouse:///"></label></p>
+						</div>
+						<p class="submit"><span class="label"></span><input type="submit" name="submit-from-warehouse-form" id="submit-from-warehouse-form" value="Next &raquo;"></p>
+					</form>
+<?php } ?>
 				</div>
 			</div>
 		</div>

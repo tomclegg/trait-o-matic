@@ -60,7 +60,18 @@ header("Pragma: no-cache");
 					<h3><?php echo $username; ?></h3>
 					<p>Date of birth: <?php echo $phenotypes['date-of-birth']; ?><br>
 					<?php echo ucfirst(lang($phenotypes['sex'])); ?>, <?php function r($v, $w) { if ($v != '') { $v .= ', '; } $v .= lang($w); return $v; } print array_reduce($phenotypes['ancestry'], 'r'); ?></p>
-					<p>Download <a href="/download/ns/<?php echo urlencode($job_id); ?>">nsSNPs</a> or <a href="/download/genotype/<?php echo urlencode($job_id); ?>">source data (all SNPs)</a></p>
+					<p>Download <a href="/download/ns/<?php echo urlencode($job_id); ?>">nsSNPs</a> or <a href="/download/genotype/<?php echo urlencode($job_id); ?>">source data (all SNPs)</a>
+<?php
+  foreach (array ("genotype", "coverage", "phenotype") as $kind):
+    if (!isset($locator[$kind]))
+      ;
+    else if ($locator[$kind] == "")
+      print $public ? "" : "<br />Warehouse locator for $kind: N/A";
+    else
+      print "<br />Warehouse locator for $kind: <a href=\"".$locator[$kind]."\">".preg_replace("{.*/([0-9a-f]{8})[0-9a-f]{24}.*}", "\$1...", $locator[$kind])."</a> (right-click to copy)";
+  endforeach;
+?>
+</p>
 <?php
 if (!$public):
 $public_mode_strings = array(

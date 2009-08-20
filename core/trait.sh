@@ -3,8 +3,8 @@
 # chkconfig: 2345 20 80 
 # description: Trait-o-matic service
 
-SERVER=/usr/share/trait/server.py
-SERVER_PID=/var/trait/.pid
+SERVER=~trait/trait-o-matic/core/server.py
+SERVER_PID=~trait/tmp/server.pid
 
 start() {
 	if [ -f "$SERVER_PID" ] && [ -n "$(ps -p $(< $SERVER_PID) -o cmd=)" ]; then

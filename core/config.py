@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # Filename: config.py
 
-UPLOAD_DIR = "/tmp/upload"
+UPLOAD_DIR = os.getenv('HOME') + "/upload"
 DB_HOST = "localhost"
 
 DB_READ_USER = "reader"
@@ -28,4 +28,4 @@ GENOTYPE_USER = "updater"
 GENOTYPE_PASSWD = "shakespeare"
 GENOTYPE_DATABASE = "genotypes"
 
-REFERENCE_GENOME = "/var/trait/hg18.2bit"
+UPLOAD_DIR = os.getenv('HOME') + "/trait/hg18.2bit"

@@ -80,6 +80,7 @@ def main():
 
 		if fileinput.filename() != last_filename:
 			table_name = os.path.basename(os.path.dirname(fileinput.filename()))
+			table_name = re.sub("-.*", "", table_name)
 			if not table_name_re.search(table_name):
 				print "could not grok dirname, skipping " + fileinput.filename()
 				fileinput.nextfile()

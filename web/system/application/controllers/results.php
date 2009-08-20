@@ -7,7 +7,39 @@ class Results extends Controller {
 		parent::Controller();	
 	}
 	
+	function json()
+	{
+		$user_details = $this->_check_user();
+		if ($user_details !== FALSE)
+		{
+			$data = $this->_prep_results($this->user->get($user_details, 1));
+			$this->load->view('results', $data);
+		}
+		else
+		{
+			echo $this->input->post('username');
+			echo $this->input->post('password');
+		}
+	}
+
 	function index()
+	{
+		$user_details = $this->_check_user();
+		if ($user_details !== FALSE)
+		{
+			// show results
+			$data = $this->_prep_results($this->user->get($user_details, 1));
+
+			//TODO: set session variable, if necessary
+			$this->load->view('results', $data);
+		}
+		else
+		{
+			$this->load->view('login');
+		}		
+	}
+	
+	function _check_user()
 	{
 		if ($this->input->post('username') !== FALSE)
 		{
@@ -19,30 +51,23 @@ class Results extends Controller {
 				'username' => trim($this->input->post('username')),
 				'password_hash' => hash('sha256', $this->input->post('password'))
 			);
-			
+
 			// error checking
 			if (!$user_details['username'])
 			{
 				$data['error'] = '<strong>Name</strong> is required.';
-				$this->load->view('login', $data);
-				return;
+				return FALSE;
 			}
 			if (!$this->user->count($user_details))
 			{
 				$data['error'] = 'Incorrect name or password.';
-				$this->load->view('login', $data);
-				return;
+				return FALSE;
 			}
-			
-			// show results
-			$this->_load_results_view($this->user->get($user_details, 1));
+			return $user_details;
 		}
-		else
-		{
-			$this->load->view('login');
-		}		
+		return FALSE;
 	}
-	
+
 	// in ./system/application/config/routes.php,
 	// samples/:any is remapped to this function
 	function samples()
@@ -59,17 +84,20 @@ class Results extends Controller {
 		
 		$user = $this->user->get(array('username' => $username), 1);
 		// we check to make sure that at least one released job exists;
-		// the function _load_results_view does not do this check
+		// the function _prep_results does not do this check
 		if (!$user || !$this->job->count(array('user' => $user['id'], 'public' => 1)))
 			return;
 		
 		// make sure to show only publicly released results
-		$this->_load_results_view($user, TRUE);	
+		$data = $this->_prep_results($user, TRUE);	
+
+		//TODO: set session variable, if necessary
+		$this->load->view('results', $data);
 	}
 	
 	// note that invoking this function incorrectly may permit bypassing
 	// password restrictions
-	function _load_results_view($user, $public_only=FALSE)
+	function _prep_results($user, $public_only=FALSE)
 	{
 		// load necessary modules
 		$this->load->model('File', 'file', TRUE);
@@ -107,9 +135,7 @@ class Results extends Controller {
 		$data['phenotypes']['snpedia'] = $this->_load_output_data('snpedia', $job_dir);
 		$data['phenotypes']['hgmd'] = $this->_load_output_data('hgmd', $job_dir);
 		$data['phenotypes']['morbid'] = $this->_load_output_data('morbid', $job_dir);
-			
-		//TODO: set session variable, if necessary
-		$this->load->view('results', $data);
+		return $data;
 	}
 	
 	function _load_output_data($kind, $job_dir)

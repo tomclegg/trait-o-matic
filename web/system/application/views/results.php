@@ -60,7 +60,11 @@ header("Pragma: no-cache");
 					<h3><?php echo $username; ?></h3>
 					<p>Date of birth: <?php echo $phenotypes['date-of-birth']; ?><br>
 					<?php echo ucfirst(lang($phenotypes['sex'])); ?>, <?php function r($v, $w) { if ($v != '') { $v .= ', '; } $v .= lang($w); return $v; } print array_reduce($phenotypes['ancestry'], 'r'); ?></p>
+
+<?php if ($this->config->item('enable_download_gff')): ?>
 					<p>Download <a href="/download/ns/<?php echo urlencode($job_id); ?>">nsSNPs</a> or <a href="/download/genotype/<?php echo urlencode($job_id); ?>">source data (all SNPs)</a>
+<?php endif; ?>
+
 <?php
   foreach (array ("genotype", "coverage", "phenotype") as $kind):
     if (!isset($locator[$kind]))

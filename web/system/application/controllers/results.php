@@ -133,6 +133,12 @@ class Results extends Controller {
 		// load necessary modules
 		$this->load->model('Job', 'job', TRUE);
 		$this->load->model('User', 'user', TRUE);
+		$this->config->load('trait-o-matic');
+
+		if (!$this->config->item('enable_download_gff'))
+		{
+			return;
+		}
 
 		// keep track of what file is being requested
 		$what = $this->uri->rsegment(3);

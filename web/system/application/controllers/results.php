@@ -43,60 +43,6 @@ class Results extends Controller {
 		}		
 	}
 	
-	function genotype_gff()
-	{
-		$this->_load_data_file ("genotype", "genotype.gff");
-	}
-
-	function nssnp_gff()
-	{
-		$this->_load_data_file ("nssnp", "nssnp.gff");
-	}
-
-	function _load_data_file($kind, $filename)
-	{
-		// load necessary modules
-		$this->load->model('User', 'user', TRUE);
-		$this->load->model('Job', 'job', TRUE);
-
-		if (strlen($this->input->post('password_hash')) == 0) {
-			$username = $this->input->post ('username');
-			$user = $this->user->get(array('username' => $username), 1);
-			if (!$user || !$this->job->count(array('user' => $user['id'], 'public' => 1)))
-				return;
-			$this->_load_datafile_view ($user, true, $kind, $filename);
-		}
-		else if ($this->input->post('username') !== FALSE)
-		{
-			// populate array with user details
-			$user_details = array(
-				'username' => trim($this->input->post('username')),
-				'password_hash' => $this->input->post('password_hash')
-			);
-
-			// error checking
-			if (!$user_details['username'])
-			{
-				$data['error'] = '<strong>Name</strong> is required.';
-				$this->load->view('login', $data);
-				return;
-			}
-			if (!$this->user->count($user_details))
-			{
-				$data['error'] = 'Incorrect name or password.';
-				$this->load->view('login', $data);
-				return;
-			}
-			
-			// show results
-			$this->_load_datafile_view($this->user->get($user_details, 1), false, $kind, $filename);
-		}
-		else
-		{
-			$this->load->view('login');
-		}		
-	}
-	
 	// in ./system/application/config/routes.php,
 	// samples/:any is remapped to this function
 	function samples()
@@ -120,7 +66,7 @@ class Results extends Controller {
 		// make sure to show only publicly released results
 		$this->_load_results_view($user, TRUE);	
 	}
-
+	
 	// note that invoking this function incorrectly may permit bypassing
 	// password restrictions
 	function _load_results_view($user, $public_only=FALSE)
@@ -138,13 +84,10 @@ class Results extends Controller {
 		$data['username'] = $user['username'];
 		
 		// retrieve most recent job
-		if ($public_only) {
+		if ($public_only)
 			$jobs = $this->job->get(array('user' => $user['id'], 'public' => 1));
-			$data['password_hash'] = '';
-		} else {
+		else
 			$jobs = $this->job->get(array('user' => $user['id']));
-			$data['password_hash'] = $user['password_hash'];
-		}
 		$most_recent_job = end($jobs);
 		
 		// update retrieval timestamp on the most recent job
@@ -178,8 +121,8 @@ class Results extends Controller {
 				
 		$data = $this->genotype->get($job_dir, array('module' => $kind));
 
-		// default sort; first obtain list of columns by which to sort
-		foreach ($data as $key => $row) {
+				// default sort; first obtain list of columns by which to sort
+				foreach ($data as $key => $row) {
 			if (!array_key_exists ('taf', $row) ||
 			    !ereg("^{", $row['taf']))
 				unset ($data[$key]['taf']);
@@ -193,72 +136,32 @@ class Results extends Controller {
 
 			if (!isset ($row['gene'])) unset($data[$key]['gene']);
 
-			// to have chromosomes sort correctly, we convert X, Y, M (or MT) to numbers
-			$chromosome[$key]  = str_replace('chr', '', $row['chromosome']);
-			switch ($chromosome[$key])
-				{
-				case 'X':
-					$chromosome[$key] = '23';
-					break;
-				case 'Y':
-					$chromosome[$key] = '24';
-					break;
-				case 'M':
-				case 'MT':
-					$chromosome[$key] = '25';
-					break;
+					// to have chromosomes sort correctly, we convert X, Y, M (or MT) to numbers
+					$chromosome[$key]  = str_replace('chr', '', $row['chromosome']);
+					switch ($chromosome[$key])
+					{
+					case 'X':
+						$chromosome[$key] = '23';
+						break;
+					case 'Y':
+						$chromosome[$key] = '24';
+						break;
+					case 'M':
+					case 'MT':
+						$chromosome[$key] = '25';
+						break;
+					}
+					// other things to sort by; we include amino acid position despite having genome
+					// coordinates to break ties in case of alternative splicings
+					$coordinates[$key] = $row['coordinates'];
+					$gene[$key] = array_key_exists('gene', $row) ? $row['gene'] : "";
+					$amino_acid_position[$key] = array_key_exists('amino_acid_change', $row) ?
+					                               preg_replace('/\\D/', '', $row['amino_acid_change']) : "";
+					$phenotype[$key] = $row['phenotype'];
 				}
-			// other things to sort by; we include amino acid position despite having genome
-			// coordinates to break ties in case of alternative splicings
-			$coordinates[$key] = $row['coordinates'];
-			$gene[$key] = array_key_exists('gene', $row) ? $row['gene'] : "";
-			$amino_acid_position[$key] = array_key_exists('amino_acid_change', $row) ?
-				preg_replace('/\\D/', '', $row['amino_acid_change']) : "";
-			$phenotype[$key] = $row['phenotype'];
-		}
-		@array_multisort($chromosome, SORT_NUMERIC, $coordinates, SORT_NUMERIC,
-				 $gene, $amino_acid_position, SORT_NUMERIC, $phenotype, $data);
+				@array_multisort($chromosome, SORT_NUMERIC, $coordinates, SORT_NUMERIC,
+				                 $gene, $amino_acid_position, SORT_NUMERIC, $phenotype, $data);
 		return $data;
-	}
-	
-	// note that invoking this function incorrectly may permit bypassing
-	// password restrictions
-	function _load_datafile_view ($user, $public_only=FALSE, $kind, $filename)
-	{
-		// load necessary modules
-		$this->load->model('File', 'file', TRUE);
-		$this->load->model('Job', 'job', TRUE);
-		$this->load->helper('file');
-		$this->load->helper('json');
-		$this->load->helper('language');
-		// load strings for phenotypes
-		$this->lang->load('phenotype');
-		
-		// load the user name into our output data		
-		$data['username'] = $user['username'];
-		
-		// retrieve most recent job
-		if ($public_only)
-			$jobs = $this->job->get(array('user' => $user['id'], 'public' => 1));
-		else
-			$jobs = $this->job->get(array('user' => $user['id']));
-		$most_recent_job = end($jobs);
-		
-		// read user-submitted phenotypes and append to data
-		$datafile_file = $this->file->get(array('kind' => $kind, 'job' => $most_recent_job['id']), 1);
-		if ($datafile_file) {
-			$datafile_path = $datafile_file['path'];
-		} else if ($kind == "nssnp" &&
-			   ($datafile_file = $this->file->get(array('kind' => 'genotype', 'job' => $most_recent_job['id']), 1))) {
-			$datafile_path = dirname ($datafile_file['path']) . "/ns.gff";
-		} else {
-			return;
-		}
-
-		header ("Content-type: text/plain");
-		header ("Content-disposition: attachment; filename=\"$filename\"");
-		readfile ($datafile_path);
-		exit;
 	}
 	
 }

@@ -21,4 +21,5 @@ cp -R $SOURCE/web/statistics $TARGET
 rm -Rf $TARGET/system/application
 cp -R $SOURCE/web/system/application $TARGET/system/application
 cp $SOURCE/web/htaccess $TARGET/.htaccess
+perl -p -e "s/%USER%/$USER/" < $SOURCE/web/system/application/config/upload.php.in > $TARGET/system/application/config/upload.php
 

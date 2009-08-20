@@ -6,29 +6,29 @@ NameVirtualHost *:3110
 		AddOutputFilterByType DEFLATE text/html text/plain text/xml text/javascript text/css application/x-javascript
 	</IfModule>
 	
-	DocumentRoot /home/ubuntu/www
+	DocumentRoot /home/%USER%/www
 	<Directory />
 		Options FollowSymLinks
 		AllowOverride None
 	</Directory>
-	<Directory /home/ubuntu/www/>
+	<Directory /home/%USER%/www/>
 		Options Indexes FollowSymLinks MultiViews
 		AllowOverride FileInfo
 		Order allow,deny
 		allow from all
 	</Directory>
-        <Directory /home/ubuntu/www/query/>
+        <Directory /home/%USER%/www/query/>
                 <IfModule mod_php5.c>
                         php_value upload_max_filesize 1024M
                 </IfModule>
         </Directory>
 
-	ErrorLog /home/ubuntu/log/error.log
+	ErrorLog /home/%USER%/log/error.log
 
 	# Possible values include: debug, info, notice, warn, error, crit,
 	# alert, emerg.
 	LogLevel warn
 
-	CustomLog /home/ubuntu/log/access.log combined
+	CustomLog /home/%USER%/log/access.log combined
 	ServerSignature On
 </VirtualHost>

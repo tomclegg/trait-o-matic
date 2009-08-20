@@ -3,6 +3,8 @@
 function warehouse_fetch ($path)
 {
 	if (is_link ($path) && ereg("^warehouse://", readlink($path))) {
+		$pw = posix_getpwuid(posix_getuid());
+		putenv("HOME=".$pw["dir"]);
 		return shell_exec ("whget ''".escapeshellarg($path)." -");
 	}
 	else {

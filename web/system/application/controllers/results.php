@@ -64,14 +64,13 @@ class Results extends Controller {
 			$user = $this->user->get(array('username' => $username), 1);
 			if (!$user || !$this->job->count(array('user' => $user['id'], 'public' => 1)))
 				return;
-			$this->_load_datafile_view ($user, true, $kind, ereg_replace(" ", "_", "$username $filename"));
+			$this->_load_datafile_view ($user, true, $kind, $filename);
 		}
 		else if ($this->input->post('username') !== FALSE)
 		{
-			$username = trim($this->input->post('username'));
 			// populate array with user details
 			$user_details = array(
-				'username' => $username,
+				'username' => trim($this->input->post('username')),
 				'password_hash' => $this->input->post('password_hash')
 			);
 
@@ -90,7 +89,7 @@ class Results extends Controller {
 			}
 			
 			// show results
-			$this->_load_datafile_view($this->user->get($user_details, 1), false, $kind, ereg_replace(" ", "_", "$username $filename"));
+			$this->_load_datafile_view($this->user->get($user_details, 1), false, $kind, $filename);
 		}
 		else
 		{

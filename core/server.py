@@ -24,7 +24,11 @@ def trackback(url, params):
 	request.add_header('Content-type', 'application/x-www-form-urlencoded;charset=utf-8')
 	try:
 		file = urllib2.urlopen(request)
-	except URLError:
+	except urllib2.HTTPError, detail:
+		print "Unexpected http error:", detail, "for url", url
+		return False
+	except:
+		print "Unexpected error:", sys.exc_info()[0], "for url", url
 		return False
 	file.close()
 	return True
@@ -72,9 +76,9 @@ def main():
 		# now figure out where to store the file permanently
 		permanent_dir = os.path.join(UPLOAD_DIR, s.hexdigest())
 		permanent_file = os.path.join(permanent_dir, "genotype.gff")
-		if not os.exists(permanent_dir):
+		if not os.path.exists(permanent_dir):
 			os.makedirs(permanent_dir)
-			shutil.move(output_path, permanent_file)
+			shutil.copy(output_path, permanent_file)
 		
 		# run the query
 		submit_local(permanent_file)
@@ -84,8 +88,15 @@ def main():
 	def submit_local(genotype_file, coverage_file='', trackback_url='', request_token=''):
 		# execute script
 		script_dir = os.path.dirname(sys.argv[0])
-		output_dir = os.path.dirname(genotype_file)
 
+		# create output dir
+		output_dir = os.path.dirname(genotype_file) + "-out"
+		try:
+			if not os.path.exists(output_dir):
+				os.makedirs(output_dir)
+		except:
+			print "Unexpected error:", sys.exc_info()[0]
+		
 		# fetch from warehouse if genotype file is special symlink
 		fetch_command = "cat"
 		if os.path.islink(genotype_file):

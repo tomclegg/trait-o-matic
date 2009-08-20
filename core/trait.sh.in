@@ -3,15 +3,16 @@
 # chkconfig: 2345 20 80 
 # description: Trait-o-matic service
 
-SERVER=/usr/share/trait/server.py
-SERVER_PID=/var/trait/.pid
+USER=%USER%
+SERVER=/home/$USER/trait-o-matic/core/server.py
+SERVER_PID=/home/$USER/tmp/server.pid
 
 start() {
 	if [ -f "$SERVER_PID" ] && [ -n "$(ps -p $(< $SERVER_PID) -o cmd=)" ]; then
 		echo "Trait-o-matic server already running"
 	else
 		echo "Starting Trait-o-matic server..."
-		python $SERVER &> /dev/null &
+		su $USER -c "python $SERVER &> /home/$USER/log/server.log" &
 		echo $! > $SERVER_PID
 	fi
 }

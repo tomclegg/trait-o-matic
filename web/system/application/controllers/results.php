@@ -7,6 +7,21 @@ class Results extends Controller {
 		parent::Controller();	
 	}
 	
+	function json()
+	{
+		$user_details = $this->_check_user();
+		if ($user_details !== FALSE)
+		{
+			$data = $this->_prep_results($this->user->get($user_details, 1));
+			$this->load->view('results', $data);
+		}
+		else
+		{
+			echo $this->input->post('username');
+			echo $this->input->post('password');
+		}
+	}
+
 	function index()
 	{
 		// load necessary modules
@@ -16,9 +31,12 @@ class Results extends Controller {
 		$user_details = $this->_authenticate();
 		if (!$user_details)
 			return;
-		
+
+		//TODO: set session variable, if necessary
+
 		// show data
-		$this->_load_results_view($this->user->get($user_details, 1));		
+		$data = $this->_prep_results($this->user->get($user_details, 1));
+		$this->load->view('results', $data);
 	}
 	
 	// in ./system/application/config/routes.php,
@@ -171,12 +189,13 @@ class Results extends Controller {
 		
 		$user = $this->user->get(array('username' => $username), 1);
 		// we check to make sure that at least one released job exists;
-		// the function _load_results_view does not do this check
+		// the function _prep_results does not do this check
 		if (!$user || !$this->job->count(array('user' => $user['id'], 'public' => 1)))
 			return;
 		
 		// make sure to show only publicly released results
-		$this->_load_results_view($user, TRUE);	
+		$data = $this->_prep_results($user, TRUE);
+		$this->load->view('results', $data);
 	}
 	
 	// this is our authentication function
@@ -192,7 +211,7 @@ class Results extends Controller {
 				'username' => trim($this->input->post('username')),
 				'password_hash' => hash('sha256', $this->input->post('password'))
 			);
-			
+
 			// error checking
 			if (!$user_details['username'])
 			{
@@ -293,7 +312,7 @@ class Results extends Controller {
 	
 	// note that invoking this function incorrectly may permit bypassing
 	// password restrictions
-	function _load_results_view($user, $public_only=FALSE)
+	function _prep_results($user, $public_only=FALSE)
 	{
 		// load necessary modules
 		$this->load->model('File', 'file', TRUE);
@@ -363,8 +382,7 @@ class Results extends Controller {
 			}
 		}
 
-		//TODO: set session variable, if necessary
-		$this->load->view('results', $data);
+		return $data;
 	}
 	
 	// note that invoking this function incorrectly may permit bypassing

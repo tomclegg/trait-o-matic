@@ -17,6 +17,7 @@ class Query extends Controller {
 			$this->load->library('form_validation');
 			$this->load->model('File', 'file', TRUE);
 			$this->load->model('Job', 'job', TRUE);
+			$this->config->load('trait-o-matic');
 			
 			// error checking
 			$error = FALSE;
@@ -211,6 +212,10 @@ class Query extends Controller {
 			
 			// create random request token and save it
 			$trackback_url = site_url("query/trackback/{$job}");
+			if ($this->config->item('site_url_for_trackback'))
+			{
+				$trackback_url = $this->config->item('site_url_for_trackback') . "/query/trackback/{$job}";
+			}
 			$request_token = hash('sha256', rand());
 			$request_token_path = dirname($genotype_path).'/'.$request_token.'.txt';
 			if (!write_file($request_token_path, $request_token))

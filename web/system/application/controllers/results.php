@@ -279,7 +279,7 @@ class Results extends Controller {
 		
 		// grab the appropriate file
 		//TODO: kind of a hack for "ns"
-		$kind = ($what == "ns") ? "genotype" : $what;
+		$kind = ($what == "ns") ? "out/readme" : $what;
 		$data_file = $this->file->get(array('kind' => $kind, 'job' => $job), 1);
 		if (!$data_file)
 			return;

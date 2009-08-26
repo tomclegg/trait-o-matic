@@ -400,9 +400,10 @@ class Results extends Controller {
 		$this->load->helper('json');
 				
 		$data = $this->genotype->get($job_dir, array('module' => $kind));
+		if (!$data) return NULL;
 
-				// default sort; first obtain list of columns by which to sort
-				foreach ($data as $key => $row) {
+		// default sort; first obtain list of columns by which to sort
+		foreach ($data as $key => $row) {
 			if (!array_key_exists ('taf', $row) ||
 			    !ereg("^{", $row['taf']))
 				unset ($data[$key]['taf']);

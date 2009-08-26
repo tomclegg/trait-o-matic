@@ -365,7 +365,8 @@ class Results extends Controller {
 		$job_dir = basename(dirname($phenotype_path));
 		$data['phenotypes']['omim'] = $this->_load_output_data('omim', $job_dir);
 		$data['phenotypes']['snpedia'] = $this->_load_output_data('snpedia', $job_dir);
-		$data['phenotypes']['hgmd'] = $this->_load_output_data('hgmd', $job_dir);
+		if ($this->config->item('enable_hgmd'))
+			$data['phenotypes']['hgmd'] = $this->_load_output_data('hgmd', $job_dir);
 		$data['phenotypes']['morbid'] = $this->_load_output_data('morbid', $job_dir);
 
 		if ($this->config->item('enable_warehouse_storage'))

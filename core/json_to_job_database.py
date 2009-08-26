@@ -59,7 +59,7 @@ def main():
 
 	warnings.filterwarnings("ignore", "Table '.*' already exists")
 
-	table_name_re = re.compile("^[0-9a-f]{32}[0-9a-f]{32}?$");
+	table_name_re = re.compile("^[0-9a-f]{32}[0-9a-f]{32}?(-out)?$");
 	last_table_name = None
 	last_filename = None
 

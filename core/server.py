@@ -129,7 +129,7 @@ def main():
 		         '8': "",
 		         '0': os.path.join(output_dir, "README") }
 		cmd = '''(
-		%(fetch)s '%(in)s' | tee /tmp/gff | python '%(A)s' '%(reference)s' /dev/stdin > '%(1)s'
+		%(fetch)s '%(in)s' | python '%(A)s' '%(reference)s' /dev/stdin > '%(1)s'
 		python '%(B)s' '%(1)s' > '%(2)s'
 		python '%(C)s' '%(2)s' '%(reference)s' > '%(3)s'
 		python '%(D)s' '%(3)s' > '%(4)s'

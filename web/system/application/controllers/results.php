@@ -362,12 +362,13 @@ class Results extends Controller {
 		$data['processed'] = $most_recent_job['processed'];
 		
 		// read results
+		$job_id = $most_recent_job['id'];
 		$job_dir = basename(dirname($phenotype_path));
-		$data['phenotypes']['omim'] = $this->_load_output_data('omim', $job_dir);
-		$data['phenotypes']['snpedia'] = $this->_load_output_data('snpedia', $job_dir);
+		$data['phenotypes']['omim'] = $this->_load_output_data('omim', $job_id, $job_dir);
+		$data['phenotypes']['snpedia'] = $this->_load_output_data('snpedia', $job_id, $job_dir);
 		if ($this->config->item('enable_hgmd'))
-			$data['phenotypes']['hgmd'] = $this->_load_output_data('hgmd', $job_dir);
-		$data['phenotypes']['morbid'] = $this->_load_output_data('morbid', $job_dir);
+			$data['phenotypes']['hgmd'] = $this->_load_output_data('hgmd', $job_id, $job_dir);
+		$data['phenotypes']['morbid'] = $this->_load_output_data('morbid', $job_id, $job_dir);
 
 		if ($this->config->item('enable_warehouse_storage'))
 		{
@@ -394,22 +395,43 @@ class Results extends Controller {
 	
 	// note that invoking this function incorrectly may permit bypassing
 	// password restrictions
-	function _load_output_data($kind, $job_dir)
+	function _load_output_data($kind, $job_id, $job_dir)
 	{
-		$this->load->model('Genotype', 'genotype', TRUE);
+		$this->config->load('trait-o-matic');
+		$this->load->model('File', 'file', TRUE);
+		$this->load->helper('file');
 		$this->load->helper('json');
-				
-		$data = $this->genotype->get($job_dir, array('module' => $kind));
-		if (!$data) return NULL;
 
+		$data = NULL;
+		if ($this->config->item('backend_intermediary') == 'mysql')
+		{
+			$this->load->model('Genotype', 'genotype', TRUE);
+			$data = $this->genotype->get($job_dir, array('module' => $kind));
+		}
+		if (!$data)
+		{
+			$file = $this->file->get(array('kind' => "out/{$kind}", 'job' => $job_id), 1);
+			if (!$file) return NULL;
+			$data = array();
+			$path = $file['path'];
+			foreach (preg_split('/[\r\n]+/', read_file($path), -1, PREG_SPLIT_NO_EMPTY) as $line)
+			{
+				$data[] = get_object_vars(json_decode($line));
+			}
+		}
 		// default sort; first obtain list of columns by which to sort
 		foreach ($data as $key => $row) {
-			if (!array_key_exists ('taf', $row) ||
+			if (array_key_exists ('taf', $row) && is_object($row['taf']))
+				;
+			else if (!array_key_exists ('taf', $row) ||
 			    !ereg("^{", $row['taf']))
 				unset ($data[$key]['taf']);
 			else
 				$data[$key]['taf'] = json_decode($row['taf']);
-			if (!array_key_exists ('maf', $row) ||
+
+			if (array_key_exists ('maf', $row) && is_object($row['maf']))
+				;
+			else if (!array_key_exists ('maf', $row) ||
 			    !ereg("^{", $row['maf']))
 				unset ($data[$key]['maf']);
 			else

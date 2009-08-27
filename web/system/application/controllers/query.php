@@ -287,7 +287,7 @@ class Query extends Controller {
 			if (!$this->input->post('coverage_locator') ||
 			    $this->input->post('coverage_locator') == 'warehouse:///')
 			{
-				// nothing to do
+				// No coverage provided - do nothing
 			}
 			else if (!symlink($this->input->post('coverage_locator'), $coverage_path))
 			{
@@ -299,19 +299,26 @@ class Query extends Controller {
 			}
 
 			$phenotype_path = $job_subdirectory.'/'.'phenotype';
-			if ($this->input->post('phenotype_locator') &&
-			    !symlink($this->input->post('phenotype_locator'), $phenotype_path))
+			if (!$this->input->post('phenotype_locator') ||
+			    $this->input->post('phenotype_locator') == 'warehouse:///')
+			{
+				// No phenotype/profile data - show form
+				$data['job'] = $job;
+				$this->load->view('traits', $data);
+				return;
+			}
+			else if ($this->input->post('phenotype_locator') &&
+				 !symlink($this->input->post('phenotype_locator'), $phenotype_path))
 			{
 				//TODO: error out
 			}
 			else
 			{
+				// Skip trait form and go to user/pass form
 				$this->file->insert(array('job' => $job, 'kind' => 'phenotype', 'path' => $phenotype_path));
+				$data['job'] = $job;
+				$this->load->view('signup', $data);
 			}
-			
-			// now move on to the next stage
-			$data['job'] = $job;
-			$this->load->view('signup', $data);
 		}
 		// nothing to process: show the first page
 		else

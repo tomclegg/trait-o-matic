@@ -95,7 +95,7 @@ endif;
 							<input type="text" class="wide text" name="genotype_locator" id="genotype" value="warehouse:///"></label></p>
 							<p><label class="label">Coverage<span class="description"> (optional)</span><br>
 							<input type="text" class="wide text" name="coverage_locator" id="coverage" value="warehouse:///"></label></p>
-							<p><label class="label">Phenotype/profile</span><br>
+							<p><label class="label">Phenotype/profile<span class="description"> (optional)</span><br>
 							<input type="text" class="wide text" name="phenotype_locator" id="phenotype" value="warehouse:///"></label></p>
 						</div>
 						<p class="submit"><span class="label"></span><input type="submit" name="submit-from-warehouse-form" id="submit-from-warehouse-form" value="Next &raquo;"></p>

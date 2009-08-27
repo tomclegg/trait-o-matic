@@ -92,11 +92,13 @@ endif;
 					<form name="from-warehouse-form" id="from-warehouse-form" method="POST" action="/query/" style="display: none;">
 						<div class="wrapper">
 							<p><label class="label">Genotype<br>
-							<input type="text" class="wide text" name="genotype_locator" id="genotype" value="warehouse:///"></label></p>
+							<input type="text" class="wide text" name="genotype_locator" id="genotype" value="<?= htmlspecialchars(isset($genotype_locator) ? $genotype_locator : "warehouse:///") ?>"></label></p>
 							<p><label class="label">Coverage<span class="description"> (optional)</span><br>
-							<input type="text" class="wide text" name="coverage_locator" id="coverage" value="warehouse:///"></label></p>
+							<input type="text" class="wide text" name="coverage_locator" id="coverage" value="<?= htmlspecialchars(isset($coverage_locator) ? $coverage_locator : "warehouse:///") ?>"></label></p>
+<!--
 							<p><label class="label">Phenotype/profile<span class="description"> (optional)</span><br>
-							<input type="text" class="wide text" name="phenotype_locator" id="phenotype" value="warehouse:///"></label></p>
+							<input type="text" class="wide text" name="phenotype_locator" id="phenotype" value="<?= htmlspecialchars(isset($phenotype_locator) ? $phenotype_locator : "warehouse:///") ?>"></label></p>
+-->
 						</div>
 						<p class="submit"><span class="label"></span><input type="submit" name="submit-from-warehouse-form" id="submit-from-warehouse-form" value="Next &raquo;"></p>
 					</form>

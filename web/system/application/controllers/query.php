@@ -248,7 +248,6 @@ class Query extends Controller {
 
 			// validate the form
 			$this->form_validation->set_rules('genotype_locator', 'Genotype', 'required');
-			$this->form_validation->set_rules('phenotype_locator', 'Phenotype', 'required');
 
 			// bail if we've encountered errors
 			if (!$this->form_validation->run())

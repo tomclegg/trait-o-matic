@@ -50,6 +50,11 @@ class Results extends Controller {
 		$this->load->library('xmlrpc');
 		$this->config->load('trait-o-matic');
 
+		if (!$this->config->item('enable_chmod'))
+		{
+			return;
+		}
+
 		// keep track of what permissions we're setting
 		$job_public_mode_symbol = $this->uri->rsegment(3);
 		if (!$job_public_mode_symbol)
@@ -104,26 +109,70 @@ class Results extends Controller {
 		if ($job_public_mode > 0 &&
 		    $this->config->item ("enable_warehouse_storage"))
 		{
-			$path = array();
-			foreach (array ('genotype', 'coverage', 'phenotype') as $kind) {
-				$file = $this->file->get(array('kind' => $kind, 'job' => $job), 1);
-				if ($file && $file['path'])
-					$path[$kind] = $file['path'];
-				else
-					$path[$kind] = '';
-			}
-			//TODO: move server address into a config file
-			$this->xmlrpc->server('http://localhost/', 8080);
-			$this->xmlrpc->method('copy_to_warehouse');
-			$request = array($path['genotype'], $path['coverage'], $path['phenotype'], '', '', TRUE);
-			$this->xmlrpc->request($request);
-			if (!$this->xmlrpc->send_request())
-			{
-				// echo $this->xmlrpc->display_error();
-				//TODO: error out, with some sort of interface
-			}
+			$this->_share($job);
 		}
 		$this->load->view('confirm_chmod');
+	}
+
+	function share()
+	{
+		$this->load->model('Job', 'job', TRUE);
+		$this->load->model('User', 'user', TRUE);
+		$this->load->model('File', 'file', TRUE);
+		$this->load->library('xmlrpc');
+		$this->config->load('trait-o-matic');
+		if (!$this->config->item ("enable_warehouse_storage"))
+		{
+			return;
+		}
+
+		// keep track of the job ID
+		$job = $this->uri->rsegment(3);
+		if (!$job)
+		{
+			return;
+		}
+		
+		// authenticate
+		$user_details = $this->_authenticate();
+		if (!$user_details)
+			return;
+		
+		// now make sure the user is the correct one (i.e. the owner of the job)
+		$user = $this->user->get($user_details, 1);
+		if (!$this->job->count(array('user' => $user['id'], 'id' => $job)))
+		{
+			$data['error'] = 'Only users who have submitted a query may change its settings.';
+			$data['redirect'] = $this->uri->uri_string();
+			$this->load->view('login', $data);
+			return;
+		}
+
+		$this->_share($job);
+		$this->load->view('confirm_share');
+	}
+
+	function _share($job)
+	{
+		$path = array();
+		foreach (array ('genotype', 'coverage', 'phenotype') as $kind)
+		{
+			$file = $this->file->get(array('kind' => $kind, 'job' => $job), 1);
+			if ($file && $file['path'])
+				$path[$kind] = $file['path'];
+			else
+				$path[$kind] = '';
+		}
+		//TODO: move server address into a config file
+		$this->xmlrpc->server('http://localhost/', 8080);
+		$this->xmlrpc->method('copy_to_warehouse');
+		$request = array($path['genotype'], $path['coverage'], $path['phenotype'], '', '', TRUE);
+		$this->xmlrpc->request($request);
+		if (!$this->xmlrpc->send_request())
+		{
+			// echo $this->xmlrpc->display_error();
+			//TODO: error out, with some sort of interface
+		}
 	}
 	
 	// in ./system/application/config/routes.php,

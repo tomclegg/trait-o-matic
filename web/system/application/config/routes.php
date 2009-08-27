@@ -43,6 +43,7 @@
 $route['default_controller'] = "samples";
 $route['scaffolding_trigger'] = "";
 $route['chmod/(:any)/(:any)'] = "results/chmod/$1/$2";
+$route['share/(:any)'] = "results/share/$1";
 $route['download/(:any)/(:any)'] = "results/download/$1/$2";
 $route['reprocess/(:any)'] = "reprocess/index/$1";
 $route['samples/(:any)'] = "results/samples/$1";

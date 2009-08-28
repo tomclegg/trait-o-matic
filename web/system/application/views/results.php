@@ -77,7 +77,10 @@ header("Pragma: no-cache");
       print "<br />Warehouse locator for $kind: <a href=\"".$locator[$kind]."\">".preg_replace("{.*/([0-9a-f]{8})[0-9a-f]{24}.*}", "\$1...", $locator[$kind])."</a> (right-click to copy)";
   endforeach;
 
-  if ($this->config->item('enable_warehouse_storage') && $have_unshared):
+  if (!$public &&
+      $job_public_mode >= 0 &&
+      $this->config->item('enable_warehouse_storage') &&
+      $have_unshared):
     print "<br /><a href=\"/share/".urlencode($job_id)."\">Copy data to warehouse</a>";
   endif;
 ?>

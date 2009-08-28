@@ -171,6 +171,7 @@ class Query extends Controller {
 			$this->load->model('File', 'file', TRUE);
 			$this->load->model('Job', 'job', TRUE);
 			$this->load->model('User', 'user', TRUE);
+			$this->config->load('trait-o-matic');
 			
 			// keep track of the job ID (very important!)
 			$job = $this->input->post('job');

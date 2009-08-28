@@ -192,7 +192,7 @@ class Query extends Controller {
 			
 			// insert a new user, and update our job with the user ID
 			$user_details = array(
-				'username' => $this->input->post('username'),
+				'username' => trim(ereg_replace("_", " ", $this->input->post('username'))),
 				'password_hash' => hash('sha256', $this->input->post('password'))
 			);
 			if ($this->input->post('email'))
@@ -392,7 +392,7 @@ class Query extends Controller {
 		
 		$this->form_validation->set_message('_unique', "<strong>%s</strong> &ldquo;{$str}&rdquo; already exists.");
 		
-		$c = $this->user->count(array('username' => $str));
+		$c = $this->user->count(array('username' => trim(ereg_replace("_", " ", $str))));
 		if ($c)
 			return FALSE;
 		return TRUE;

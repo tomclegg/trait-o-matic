@@ -9,7 +9,7 @@ class Results extends Controller {
 	
 	function json()
 	{
-		$user_details = $this->_check_user();
+		$user_details = $this->_authenticate();
 		if ($user_details !== FALSE)
 		{
 			$data = $this->_prep_results($this->user->get($user_details, 1));
@@ -241,7 +241,8 @@ class Results extends Controller {
 		$username = $this->uri->rsegment(3);
 		if ($username === FALSE)
 			return;
-		
+
+		$username = ereg_replace ("_", " ", $username);
 		$user = $this->user->get(array('username' => $username), 1);
 		// we check to make sure that at least one released job exists;
 		// the function _prep_results does not do this check
@@ -263,7 +264,7 @@ class Results extends Controller {
 		{
 			// populate array with user details
 			$user_details = array(
-				'username' => trim($this->input->post('username')),
+				'username' => trim(ereg_replace ("_", " ", $this->input->post('username'))),
 				'password_hash' => hash('sha256', $this->input->post('password'))
 			);
 

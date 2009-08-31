@@ -24,6 +24,7 @@ class Samples extends Controller {
 			$user = $this->user->get(array('id' => $u['user']), 1);
 			$data['samples'][] = $user['username'];
 		}
+		sort($data['samples']);
 		
 		$this->load->view('samples', $data);
 	}

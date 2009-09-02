@@ -14,7 +14,7 @@ header("Content-type: text/plain");
 {
 <?php
 	$first_source = 1;
-foreach (array('omim' => 'OMIM', 'snpedia' => 'SNPedia', 'hgmd' => 'HGMD', 'morbid' => 'Other hypotheses') as $k => $v):
+foreach (array('omim' => 'OMIM', 'snpedia' => 'SNPedia', 'hgmd' => 'HGMD', 'pharmgkb' => 'PharmGKB', 'morbid' => 'Other hypotheses') as $k => $v):
 	if (!$first_source) { echo " ,\n"; }
 	$first_source = 0;
 		echo " \"", $k, "\": ["

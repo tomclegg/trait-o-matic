@@ -25,6 +25,10 @@ HGMD_USER = "reader"
 HGMD_PASSWD = "shakespeare"
 HGMD_DATABASE = "hgmd_pro"
 
+PHARMGKB_USER = "reader"
+PHARMGKB_PASSWD = "shakespeare"
+PHARMGKB_DATABASE = "pharmgkb"
+
 GENOTYPE_USER = "updater"
 GENOTYPE_PASSWD = "shakespeare"
 GENOTYPE_DATABASE = "genotypes"

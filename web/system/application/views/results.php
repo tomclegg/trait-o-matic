@@ -129,7 +129,7 @@ $public_mode_actions = array(
 			</div>
 			<div id="results">
 <?php
-foreach (array('omim' => 'OMIM', 'snpedia' => 'SNPedia', 'hgmd' => 'HGMD', 'morbid' => 'Other hypotheses') as $k => $v):
+foreach (array('omim' => 'OMIM', 'snpedia' => 'SNPedia', 'hgmd' => 'HGMD', 'pharmgkb' => 'PharmGKB (alpha)', 'morbid' => 'Other hypotheses') as $k => $v):
 	if (!isset($phenotypes[$k])) continue;
 ?>
 			<h3 class="toggle"><?php echo htmlspecialchars($v); ?><?php if (array_key_exists($k, $phenotypes) && count($phenotypes[$k])): ?> <span class="count">(<?php echo count($phenotypes[$k]); ?>)</span><?php endif; ?></h3>
@@ -245,6 +245,9 @@ case 'pmid':
 	$pmid = $reference[1];
 	$url = "http://www.ncbi.nlm.nih.gov/pubmed/{$pmid}";
 	break;
+case 'http':
+	$url = $references[0];
+	break;
 }
 ?>
 						<tr class="<?php if ($freq_unknown): ?>unknown-frequency<?php elseif ($rare): ?>rare<?php elseif ($minor): ?>minor<?php else: ?>major<?php endif; ?>">
@@ -252,7 +255,7 @@ case 'pmid':
 							<?php if (array_key_exists('gene', $o) && array_key_exists('amino_acid_change', $o)): ?><i><?php echo $o['gene']; ?>, <?php echo $o['amino_acid_change']; ?></i><?php else: ?><i><span class="dim">(Not computed)</span></i><?php endif; ?></td>
 							<td><?php echo $o['genotype']; ?><?php if (array_key_exists('trait_allele', $o)): ?><br>
 							<i><?php echo $o['trait_allele']; ?></i><?php endif; ?></td>
-							<td><a href="<?php echo $url; ?>"><?php echo $o['phenotype']; ?></a></td>
+							<td><?php if(isset($url)): ?><a href="<?php echo $url; ?>"><?php endif; echo $o['phenotype']; if (isset($url)): ?></a><?php endif; ?></td>
 <?php if (array_key_exists('score', $o)): ?>
 							<td scope="col" class="number"><?php echo $o['score']; ?></td>
 <?php endif; ?>

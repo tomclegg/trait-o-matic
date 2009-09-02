@@ -418,6 +418,8 @@ class Results extends Controller {
 		$data['phenotypes']['snpedia'] = $this->_load_output_data('snpedia', $job_id, $job_dir);
 		if ($this->config->item('enable_hgmd'))
 			$data['phenotypes']['hgmd'] = $this->_load_output_data('hgmd', $job_id, $job_dir);
+		if ($this->config->item('enable_pharmgkb'))
+			$data['phenotypes']['pharmgkb'] = $this->_load_output_data('pharmgkb', $job_id, $job_dir);
 		$data['phenotypes']['morbid'] = $this->_load_output_data('morbid', $job_id, $job_dir);
 
 		if ($this->config->item('enable_warehouse_storage'))

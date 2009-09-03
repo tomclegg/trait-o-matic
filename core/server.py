@@ -138,7 +138,7 @@ def main():
 		python '%(E)s' '%(3)s' > '%(5)s'
 		python '%(F)s' '%(3)s' > '%(6)s'
 		python '%(G)s' '%(2)s' > '%(7)s'
-		python '%(pharmgkb_bin)s' '%(2)s' > '%(pharmgkb_out)s'
+		python '%(pharmgkb_bin)s' '%(3)s' > '%(pharmgkb_out)s'
 		python '%(H)s' '%(4)s' '%(5)s' '%(6)s' '%(7)s' '%(pharmgkb_out)s' --in-place
 		python '%(I)s' '%(4)s' '%(5)s' '%(6)s' '%(7)s' '%(pharmgkb_out)s'
 		touch '%(0)s'

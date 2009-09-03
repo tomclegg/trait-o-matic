@@ -25,8 +25,7 @@ SELECT p.chrom, p.pos-1, p.pos FROM pharmgkb p LIMIT %s,10000;
 query = '''
 SELECT p.pubmed_id, p.webresource, p.annotation, p.genotype, p.name, s.strand FROM pharmgkb p
 LEFT JOIN caliban.snp129 s on s.name=%s
-WHERE p.chrom=%s
- AND p.pos=%s
+WHERE p.rsid=%s
  AND ((s.strand="+" AND (p.genotype like %s or p.genotype like %s))
   OR (s.strand="-" AND (p.genotype like %s or p.genotype like %s)))
 AND s.name is not null
@@ -116,7 +115,7 @@ def main():
 				   reverse_complement(alleles[1]))
 		
 		# query the database
-		cursor.execute(query, (rs, record.seqname, record.start,
+		cursor.execute(query, (rs, rs,
 				       '%'+alleles[0]+'%',
 				       '%'+alleles[1]+'%',
 				       '%'+reverse_alleles[0]+'%',

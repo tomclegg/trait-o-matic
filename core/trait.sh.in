@@ -4,23 +4,24 @@
 # description: Trait-o-matic service
 
 USER=%USER%
-SERVER=/home/$USER/trait-o-matic/core/server.py
-SERVER_PID=/home/$USER/tmp/server.pid
+HOME="`sh -c "echo ~$USER"`"
+SERVER="$HOME/trait-o-matic/core/server.py"
+SERVER_PID="$HOME/tmp/server.pid"
 
 start() {
-	if [ -f "$SERVER_PID" ] && [ -n "$(ps -p $(< $SERVER_PID) -o cmd=)" ]; then
+	if [ -f "$SERVER_PID" ] && [ -n "$(ps -p "$(< $SERVER_PID)" -o cmd=)" ]; then
 		echo "Trait-o-matic server already running"
 	else
 		echo "Starting Trait-o-matic server..."
-		su $USER -c "python $SERVER &> /home/$USER/log/server.log" &
+		su $USER -c "python $SERVER &> $HOME/log/server.log" &
 		echo $! > $SERVER_PID
 	fi
 }
 
 stop() {
 	echo "Stopping Trait-o-matic server..."
-	kill $(< $SERVER_PID)
-	rm $SERVER_PID
+	su $USER -c "kill '$(< $SERVER_PID)'"
+	su $USER -c "rm '$SERVER_PID'"
 }
 
 case "$1" in

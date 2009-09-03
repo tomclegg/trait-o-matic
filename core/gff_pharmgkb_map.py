@@ -24,9 +24,11 @@ SELECT p.chrom, p.pos-1, p.pos FROM pharmgkb p LIMIT %s,10000;
 
 query = '''
 SELECT p.pubmed_id, p.webresource, p.annotation, p.genotype, p.name, s.strand FROM pharmgkb p
-LEFT JOIN caliban.snp129 s on s.name=p.rsid
-WHERE rsid=%s
-AND ((s.strand="+" AND genotype=%s) OR (s.strand="-" AND genotype=%s))
+LEFT JOIN caliban.snp129 s on s.name=%s
+WHERE p.chrom=%s
+ AND p.pos=%s
+ AND ((s.strand="+" AND (p.genotype like %s or p.genotype like %s))
+  OR (s.strand="-" AND (p.genotype like %s or p.genotype like %s)))
 AND s.name is not null
 ;
 '''
@@ -106,14 +108,19 @@ def main():
 		# create the genotype string from the given alleles
 		#TODO: do something about the Y chromosome
 		if len(alleles) == 1:
-			genotype = alleles[0] + ";" + alleles[0]
-			reverse_genotype = reverse_complement(alleles[0]) + ";" + reverse_complement(alleles[0])
+			alleles = (alleles[0], alleles[0])
+			genotype = alleles[0]
 		else:
-			genotype = ';'.join(sorted(alleles))
-			reverse_genotype = ';'.join(sorted([reverse_complement(a) for a in alleles]))
+			genotype = '/'.join(sorted(alleles))
+		reverse_alleles = (reverse_complement(alleles[0]),
+				   reverse_complement(alleles[1]))
 		
 		# query the database
-		cursor.execute(query, (rs, genotype, reverse_genotype))
+		cursor.execute(query, (rs, record.seqname, record.start,
+				       '%'+alleles[0]+'%',
+				       '%'+alleles[1]+'%',
+				       '%'+reverse_alleles[0]+'%',
+				       '%'+reverse_alleles[1]+'%'))
 		data = cursor.fetchall()
 		
 		# move on if we don't have info

@@ -15,6 +15,7 @@ while (<>)
 	my $chr = $1;
 	my $pos = $2;
 	my $rsid = $3;
+	my $genotype = "";
 	if ($F[0] =~ /^Risk(?:\/trait)? Allele[:=] ?(?:rs\d+-)?([ACGT])$/i ||
 	    $F[0] =~ /^Allele ([ACGT])$/i ||
 	    $F[0] =~ /^([ACGT])[- ]Allele$/i ||
@@ -24,19 +25,19 @@ while (<>)
 	    $genotype = $1;
 	    $genotype =~ s/[^ACGT]//gi;
 	    $genotype =~ s/(.)(.)/$1 lt $2 ? "$1;$2" : "$2;$1"/e || ($genotype = "$genotype;$genotype");
-	}
-	else
-	{
-	    warn "Unparseable allele: $F[0]" if $ENV{DEBUG};
-	    next;
+	    $genotype =~ tr/a-z/A-Z/;
 	}
 	my ($pubmedid) = $F[3] =~ /PubMed ID:([\d,]+)/;
 	my ($webresource) = $F[3] =~ /Web Resource:(\S+)/;
 	print (join ("\t", $chr, $pos, $rsid, $genotype, $pubmedid, $webresource, @F[2..8]), "\n");
     }
+    elsif (/^\s*\#/)
+    {
+	;
+    }
     else
     {
-	next;
+	print STDERR "skip: $_\n" if $ENV{DEBUG};
     }
 }
 
@@ -66,7 +67,7 @@ echo "
  drugs text,
  drugclasses text,
  diseases text,
- unique(chrom,pos,rsid,annotation(127)),
+ unique(chrom,pos,rsid,genotype,annotation(197)),
  index(chrom,pos)
  );
  " | mysql -uroot -p

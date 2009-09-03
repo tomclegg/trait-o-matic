@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `%(table)s` (
   `ref_allele` char(1) default NULL,
   `trait_allele` char(5) default NULL,
   `gene` varchar(12) default NULL,
-  `amino_acid_change` varchar(12) default NULL,
+  `amino_acid_change` varchar(32) default NULL,
   `zygosity` enum('hom','het') default NULL,
   `variant` text,
   `phenotype` text default NULL,

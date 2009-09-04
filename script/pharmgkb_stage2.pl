@@ -60,14 +60,14 @@ echo "
  genotype char(3),
  pubmed_id varchar(64),
  webresource varchar(255),
- name char(16),
+ name char(48),
  evidence text,
  annotation text,
  genes text,
  drugs text,
  drugclasses text,
  diseases text,
- unique(chrom,pos,rsid,genotype,annotation(197)),
+ unique(chrom,pos,name,rsid,genotype,annotation(177)),
  index(chrom,pos)
  );
  " | mysql -uroot -p

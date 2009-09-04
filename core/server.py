@@ -140,7 +140,7 @@ def main():
 		python '%(G)s' '%(2)s' > '%(7)s'
 		python '%(pharmgkb_bin)s' '%(3)s' > '%(pharmgkb_out)s'
 		python '%(H)s' '%(4)s' '%(5)s' '%(6)s' '%(7)s' '%(pharmgkb_out)s' --in-place
-		python '%(I)s' '%(4)s' '%(5)s' '%(6)s' '%(7)s' '%(pharmgkb_out)s'
+		python '%(I)s' --drop-tables '%(4)s' '%(5)s' '%(6)s' '%(7)s' '%(pharmgkb_out)s'
 		touch '%(0)s'
 		python '%(Z)s' -t '%(url)s' '%(4)s' 'out/omim' '%(token)s'
 		python '%(Z)s' -t '%(url)s' '%(5)s' 'out/hgmd' '%(token)s'

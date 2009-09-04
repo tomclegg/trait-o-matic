@@ -252,7 +252,7 @@ case 'http':
 ?>
 						<tr class="<?php if ($freq_unknown): ?>unknown-frequency<?php elseif ($rare): ?>rare<?php elseif ($minor): ?>minor<?php else: ?>major<?php endif; ?>">
 							<td><?php echo $o['chromosome'].':'.$o['coordinates']; ?><br>
-							<?php if (array_key_exists('gene', $o) && array_key_exists('amino_acid_change', $o)): ?><i><?php echo $o['gene']; ?>, <?php echo $o['amino_acid_change']; ?></i><?php else: ?><i><span class="dim">(Not computed)</span></i><?php endif; ?></td>
+							<?php if (array_key_exists('gene', $o) && !empty($o['gene']) && array_key_exists('amino_acid_change', $o)): ?><i><?php echo $o['gene']; ?>, <?php echo $o['amino_acid_change']; ?></i><?php else: ?><i><span class="dim">(Not computed)</span></i><?php endif; ?></td>
 							<td><?php echo $o['genotype']; ?><?php if (array_key_exists('trait_allele', $o)): ?><br>
 							<i><?php echo $o['trait_allele']; ?></i><?php endif; ?></td>
 							<td><?php if(isset($url)): ?><a href="<?php echo $url; ?>"><?php endif; echo $o['phenotype']; if (isset($url)): ?></a><?php endif; ?></td>

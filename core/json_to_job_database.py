@@ -25,16 +25,16 @@ CREATE TABLE IF NOT EXISTS `%(table)s` (
   `module` varchar(15) NOT NULL,
   `genotype` varchar(3) default NULL,
   `ref_allele` char(1) default NULL,
-  `trait_allele` char(5) default NULL,
+  `trait_allele` varchar(64) default NULL,
   `gene` varchar(12) default NULL,
-  `amino_acid_change` varchar(32) default NULL,
+  `amino_acid_change` varchar(96) default NULL,
   `zygosity` enum('hom','het') default NULL,
   `variant` text,
   `phenotype` text default NULL,
   `reference` text NOT NULL,
   `taf` varchar(255) default NULL,
   `maf` varchar(255) default NULL,
-  PRIMARY KEY  (`chromosome`,`coordinates`,`module`,`phenotype`(128),`reference`(128))
+  PRIMARY KEY  (`module`,`chromosome`(5),`coordinates`,`gene`,`amino_acid_change`(32),`phenotype`(128),`reference`(128))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8
 '''
 
@@ -74,7 +74,11 @@ def main():
 		if not ("chromosome" in l or "coordinates" in l):
 			continue
 
-		for x in ("chromosome", "coordinates", "genotype", "ref_allele", "trait_allele", "gene", "amino_acid_change", "zygosity", "variant", "phenotype", "reference", "taf", "maf"):
+		for x in ("chromosome", "coordinates", "gene", "amino_acid_change", "phenotype", "reference"):
+			if not (x in l):
+				l[x] = ''
+
+		for x in ("genotype", "ref_allele", "trait_allele", "zygosity", "variant", "taf", "maf"):
 			if not (x in l):
 				l[x] = None
 

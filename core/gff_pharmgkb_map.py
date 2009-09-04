@@ -9,9 +9,10 @@ usage: %prog gff_file
 # ---
 # This code is part of the Trait-o-matic project and is governed by its license.
 
-import os, string, sys
+import os, string, sys, re
 import MySQLdb, MySQLdb.cursors
 import simplejson as json
+from codon import codon_321, codon_123
 from copy import copy
 from utils import gff
 from utils.biopython_utils import reverse_complement
@@ -25,9 +26,8 @@ SELECT p.chrom, p.pos-1, p.pos FROM pharmgkb p LIMIT %s,10000;
 query = '''
 SELECT p.pubmed_id, p.webresource, p.annotation, p.genotype, p.name, s.strand FROM pharmgkb p
 LEFT JOIN caliban.snp129 s on s.name=%s
-WHERE p.rsid=%s
- AND ((s.strand="+" AND (p.genotype like %s or p.genotype like %s))
-  OR (s.strand="-" AND (p.genotype like %s or p.genotype like %s)))
+WHERE (p.rsid=%s or p.name like %s or p.genes like %s)
+ AND (p.name like %s or p.name like %s or p.name like %s or p.name like %s)
 AND s.name is not null
 ;
 '''
@@ -92,18 +92,13 @@ def main():
 				rs = x.replace("dbsnp:", "")
 				break
 
-                # get amino acid change
-                x = record.attributes["amino_acid"].split(" ")
-                gene = x[0]
-                amino_acid_change_and_position = x[1]
-		
 		# quit if we don't have an rs number
 		if not rs:
 			continue
 		# we wouldn't know what to do with this, so pass it up for now
 		if len(alleles) > 2:
 			continue
-		
+
 		# create the genotype string from the given alleles
 		#TODO: do something about the Y chromosome
 		if len(alleles) == 1:
@@ -111,54 +106,72 @@ def main():
 			genotype = alleles[0]
 		else:
 			genotype = '/'.join(sorted(alleles))
-		reverse_alleles = (reverse_complement(alleles[0]),
-				   reverse_complement(alleles[1]))
-		
-		# query the database
-		cursor.execute(query, (rs, rs,
-				       '%'+alleles[0]+'%',
-				       '%'+alleles[1]+'%',
-				       '%'+reverse_alleles[0]+'%',
-				       '%'+reverse_alleles[1]+'%'))
-		data = cursor.fetchall()
-		
-		# move on if we don't have info
-		if cursor.rowcount <= 0:
-			continue
-			
-		for d in data:
-			pubmed = d[0]
-			webresource = d[1]
-			phenotype = d[2]
-			trait_allele = d[3].upper().replace("A;A","A").replace("C;C","C").replace("G;G","G").replace("T;T","T")
-                        strand = d[5]
-			
-			# format for output
-			if record.start == record.end:
-				coordinates = str(record.start)
-			else:
-				coordinates = str(record.start) + "-" + str(record.end)
-			
-			if pubmed != "":
-				reference = "dbsnp:" + rs + ",pmid:" + pubmed.replace(",", ",pmid:")
-			else:
-				reference = "dbsnp:" + rs
 
-                        if webresource != "":
-                                reference = reference + "," + webresource
-			
-			output = {
-				"chromosome": record.seqname,
-				"coordinates": coordinates,
-                                "gene": gene,
-                                "amino_acid_change": amino_acid_change_and_position,
-				"genotype": genotype,
-                                "trait_allele": trait_allele + strand,
-				"variant": str(record),
-				"phenotype": phenotype,
-				"reference": reference
-			}
-			print json.dumps(output)
+		#reverse_alleles = (reverse_complement(alleles[0]),
+		#		   reverse_complement(alleles[1]))
+
+		for gene_acid_base in record.attributes["amino_acid"].split("/"):
+
+			# get amino acid change
+			x = gene_acid_base.split(" ",1)
+			gene = x[0]
+			amino_acid_change_and_position = x[1]
+
+			# starting with F123V, build a list of ways
+			# this might appear in the PharmGKB data,
+			# ie. F123V 123F/V Phe123Val 123Phe>Val
+
+			acid_changes = []
+			acid_changes.append(re.sub(r' .*',r'', amino_acid_change_and_position))
+			acid_changes.append(re.sub(r'([A-Z])(\d+)([A-Z]+)', r'\2\1/\3', acid_changes[0]))
+			for x in range(2):
+				acid_changes.append(re.sub(r'[A-Z]', lambda x: codon_123(x.group(0)), acid_changes[x]))
+			acid_changes[3] = re.sub(r'/', r'>', acid_changes[3])
+
+			# query the database
+			cursor.execute(query, (rs, rs, '%'+gene+':%', '%'+gene+'%',
+					       '%'+acid_changes[0]+'%',
+					       '%'+acid_changes[1]+'%',
+					       '%'+acid_changes[2]+'%',
+					       '%'+acid_changes[3]+'%'))
+			data = cursor.fetchall()
+
+			# move on if we don't have info
+			if cursor.rowcount <= 0:
+				continue
+
+			for d in data:
+				pubmed = d[0]
+				webresource = d[1]
+				phenotype = d[2]
+				strand = d[5]
+
+				# format for output
+				if record.start == record.end:
+					coordinates = str(record.start)
+				else:
+					coordinates = str(record.start) + "-" + str(record.end)
+
+				if pubmed != "":
+					reference = "dbsnp:" + rs + ",pmid:" + pubmed.replace(",", ",pmid:")
+				else:
+					reference = "dbsnp:" + rs
+
+				if webresource != "":
+					reference = reference + "," + webresource
+
+				output = {
+					"chromosome": record.seqname,
+					"coordinates": coordinates,
+					"gene": gene,
+					"amino_acid_change": amino_acid_change_and_position,
+					"genotype": genotype,
+					"trait_allele": d[4] + '(' + strand + ')',
+					"variant": str(record),
+					"phenotype": phenotype,
+					"reference": reference
+				}
+				print json.dumps(output)
 	
 	# close database cursor and connection
 	cursor.close()

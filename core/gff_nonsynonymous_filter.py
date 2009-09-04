@@ -67,15 +67,18 @@ def infer_function(twobit_file, record, geneName, strand, cdsStart, cdsEnd, exon
 	# parse out exons
 	exons = []
 	running_intron_count = running_exon_count = running_cds_bases_count = 0 # 1-based
-	
+	trimmed_bases = 0
+
 	for j in range(0, len(exonStarts)):
 		# discard any non-coding portions with this if statement
 		if exonEnds[j] > cdsStart and exonStarts[j] <= cdsEnd:
 			
 			# trim the start and end to the coding region
 			if exonStarts[j] < cdsStart:
+				trimmed_bases = cdsStart - exonStarts[j]
 				exonStarts[j] = cdsStart
 			if exonEnds[j] > cdsEnd:
+				trimmed_bases = exonEnds[j] - cdsEnd
 				exonEnds[j] = cdsEnd
 			
 			# increment the count
@@ -161,6 +164,13 @@ def infer_function(twobit_file, record, geneName, strand, cdsStart, cdsEnd, exon
 					alleles.remove(record.attributes["ref_allele"])
 				except ValueError:
 					pass
+
+				if strand == "+":
+					alleles_relative_to_gene = alleles;
+					ref_relative_to_gene = record.attributes["ref_allele"]
+				else:
+					alleles_relative_to_gene = map(reverse_complement,alleles)
+					ref_relative_to_gene = reverse_complement(record.attributes["ref_allele"])
 				
 				# now work through each mutant allele
 				amino_acid_changes = []

@@ -2,36 +2,43 @@
 
 while (<>)
 {
-    if ($. == 1)
-    {
-	/^Extracted Allele\tPosition \(RSID\)\tName\(s\)\tEvidence\tAnnotation\tGenes\tDrugs\tDrug Classes\tDiseases\n$/
-	    or die "Headings not as expected, aborting";
-	next;
-    }
     chomp;
     my @F = split ("\t");
-    if ($F[1] =~ /^(chr[XY\d]+):(\d+)(?: \((rs\d+)\))?/)
+    if ($F[2] =~ /^(chr[XY\d]+):(\d+)(?: \((rs\d+)\))?/)
     {
 	my $chr = $1;
 	my $pos = $2;
 	my $rsid = $3;
 	my $genotype = "";
-	if ($F[0] =~ /^Risk(?:\/trait)? Allele[:=] ?(?:rs\d+-)?([ACGT])$/i ||
-	    $F[0] =~ /^Allele ([ACGT])$/i ||
-	    $F[0] =~ /^([ACGT])[- ]Allele$/i ||
-	    $F[0] =~ /^([ACGT][;\/]?[ACGT]) genotype$/i ||
-	    0)
+	my $gene = "";
+	my $amino_acid_change = "";
+	if ($F[0] =~ /^([ACGT])(\s.*)?$/)
 	{
 	    $genotype = $1;
-	    $genotype =~ s/[^ACGT]//gi;
-	    $genotype =~ s/(.)(.)/$1 lt $2 ? "$1;$2" : "$2;$1"/e || ($genotype = "$genotype;$genotype");
-	    $genotype =~ tr/a-z/A-Z/;
+	    if ($F[3] =~ /(\w+):\s*([a-z]{3}\d+[a-z]{3})/i)
+	    {
+		$gene = $1;
+		$amino_acid_change = $2;
+	    }
 	}
-	my ($pubmedid) = $F[3] =~ /PubMed ID:([\d,]+)/;
-	my ($webresource) = $F[3] =~ /Web Resource:(\S+)/;
-	print (join ("\t", $chr, $pos, $rsid, $genotype, $pubmedid, $webresource, @F[2..8]), "\n");
+	elsif ($F[0] =~ /^([a-z]{3}\d+[a-z]{3})$/i)
+	{
+	    $amino_acid_change = $1;
+	    if ($F[3] =~ /(\w+):\s*\Q$amino_acid_change\E/)
+	    {
+		$gene = $1;
+	    }
+	}
+	else
+	{
+	    warn "skip: $_\n";
+	    next;
+	}
+	my ($pubmedid) = $F[4] =~ /PubMed ID:([\d,]+)/;
+	my ($webresource) = $F[4] =~ /Web Resource:(\S+)/;
+	print (join ("\t", $chr, $pos, $rsid, $genotype, $gene, $amino_acid_change, $pubmedid, $webresource, @F[3..8]), "\n");
     }
-    elsif (/^\s*\#/)
+    elsif (/^\s*(\#.*|)$/ || /^(Amino Acid Records|Nucleotide Records)/)
     {
 	;
     }
@@ -58,6 +65,8 @@ echo "
  pos int(10),
  rsid char(16),
  genotype char(3),
+ gene varchar(32),
+ amino_acid_change varchar(12),
  pubmed_id varchar(64),
  webresource varchar(255),
  name char(48),
@@ -67,11 +76,12 @@ echo "
  drugs text,
  drugclasses text,
  diseases text,
- unique(chrom,pos,name,rsid,genotype,annotation(177)),
- index(chrom,pos)
+ unique(rsid,genotype,gene,amino_acid_change,annotation(177)),
+ index(rsid),
+ index(gene,amino_acid_change)
  );
  " | mysql -uroot -p
-cat ~/var.csv | ./pharmgkb_stage2.pl > ~/pharmgkb_import.tmp
+cat ~/Variant_annotation_filtered_allele_flipped_drugs.txt | ./pharmgkb_stage2.pl > ~/pharmgkb_import.tmp
 echo "
  DELETE FROM pharmgkb;
  LOAD DATA LOCAL INFILE '~/pharmgkb_import.tmp'

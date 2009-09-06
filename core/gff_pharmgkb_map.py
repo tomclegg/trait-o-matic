@@ -19,17 +19,16 @@ from utils.biopython_utils import reverse_complement
 from utils.bitset import *
 from config import DB_HOST, PHARMGKB_USER, PHARMGKB_PASSWD, PHARMGKB_DATABASE, DB_READ_DATABASE
 
-location_query = '''
-SELECT p.chrom, p.pos-1, p.pos FROM pharmgkb p LIMIT %s,10000;
-'''
-
 query = '''
-SELECT p.pubmed_id, p.webresource, p.annotation, p.genotype, p.name, s.strand FROM pharmgkb p
-LEFT JOIN caliban.snp129 s on s.name=%s
-WHERE (p.rsid=%s or p.name like %s or p.genes like %s)
- AND (p.name like %s or p.name like %s or p.name like %s or p.name like %s)
-AND s.name is not null
-;
+SELECT p.pubmed_id,
+  p.webresource,
+  if(p.drugs<>"",concat('[',p.drugs,'] ',p.annotation),p.annotation),
+  if(p.genotype<>"",p.genotype,concat(p.gene," ",p.amino_acid_change)),
+  p.name
+FROM pharmgkb p
+WHERE (p.rsid=%s and (p.genotype=%s or p.genotype=%s))
+ OR (p.gene=%s and p.amino_acid_change=%s)
+ ;
 '''
 
 def main():
@@ -47,36 +46,9 @@ def main():
 		print "Error %d while connecting to database: %s" % (message[0], message[1])
 		sys.exit()
 	
-	# build a dictionary of bitsets from the database (partly based on utility code from bx-python)
-	start_record = 0
-	last_chromosome = None
-	last_bitset = None
-	bitsets = dict()
-	# do this in 10,000 chunks
-	while True:
-		location_cursor.execute(location_query, start_record)
-		previous_start_record = start_record
-		# go through what we retrieved
-		for datum in location_cursor:
-			start_record += 1
-			chromosome = datum[0]
-			if chromosome != last_chromosome:
-				if chromosome not in bitsets:
-					bitsets[chromosome] = BinnedBitSet(MAX)
-				last_chromosome = chromosome
-				last_bitset = bitsets[chromosome]
-			start, end = datum[1], datum[2]
-			last_bitset.set_range(start, end - start)
-		# stop if we're done
-		if previous_start_record == start_record:
-			break
-	
 	# doing this intersect operation speeds up our task significantly for full genomes
 	gff_file = gff.input(sys.argv[1])	
-	for line in gff_file.intersect(bitsets):
-		# the one drawback is that intersect() was implemented to return strings, so we
-		# need to parse it
-		record = gff.input([line]).next()
+	for record in gff_file:
 		# lightly parse to find the alleles and rs number
 		alleles = record.attributes["alleles"].strip("\"").split("/")
 		ref_allele = record.attributes["ref_allele"].strip("\"")
@@ -129,22 +101,20 @@ def main():
 			acid_changes[3] = re.sub(r'/', r'>', acid_changes[3])
 
 			# query the database
-			cursor.execute(query, (rs, rs, '%'+gene+':%', '%'+gene+'%',
-					       '%'+acid_changes[0]+'%',
-					       '%'+acid_changes[1]+'%',
-					       '%'+acid_changes[2]+'%',
-					       '%'+acid_changes[3]+'%'))
+			cursor.execute(query, (rs, alleles[0], alleles[1],
+					       gene, acid_changes[2]))
 			data = cursor.fetchall()
 
-			# move on if we don't have info
-			if cursor.rowcount <= 0:
-				continue
+			# if this gene/AA change caused a hit, stop here and report it
+			if cursor.rowcount > 0:
+				break
 
+		if cursor.rowcount > 0:
 			for d in data:
 				pubmed = d[0]
 				webresource = d[1]
 				phenotype = d[2]
-				strand = d[5]
+				trait_allele = d[3]
 
 				# format for output
 				if record.start == record.end:
@@ -165,8 +135,9 @@ def main():
 					"coordinates": coordinates,
 					"gene": gene,
 					"amino_acid_change": amino_acid_change_and_position,
+					"amino_acid": record.attributes["amino_acid"],
 					"genotype": genotype,
-					"trait_allele": d[4] + '(' + strand + ')',
+					"trait_allele": trait_allele,
 					"variant": str(record),
 					"phenotype": phenotype,
 					"reference": reference

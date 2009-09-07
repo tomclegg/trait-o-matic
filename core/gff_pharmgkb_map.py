@@ -116,7 +116,7 @@ def main():
 		if cursor.rowcount > 0:
 			for d in data:
 				pubmed = d[0]
-				webresource = d[1]
+				webresource = d[1].replace(",","%2c")
 				phenotype = d[2]
 				trait_allele = d[3]
 
@@ -126,13 +126,13 @@ def main():
 				else:
 					coordinates = str(record.start) + "-" + str(record.end)
 
+				reference = ""
 				if pubmed != "":
-					reference = "dbsnp:" + rs + ",pmid:" + pubmed.replace(",", ",pmid:")
-				else:
-					reference = "dbsnp:" + rs
-
-				if webresource != "":
-					reference = reference + "," + webresource
+					reference = "pmid:" + pubmed.replace(",", ",pmid:")
+				if webresource == "http://www.genome.gov/gwastudies/":
+					reference = "gwas:" + rs + "," + reference
+				elif webresource != "":
+					reference = webresource + "," + reference
 
 				output = {
 					"chromosome": record.seqname,

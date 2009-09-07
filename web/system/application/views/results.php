@@ -245,6 +245,10 @@ case 'pmid':
 	$pmid = $reference[1];
 	$url = "http://www.ncbi.nlm.nih.gov/pubmed/{$pmid}";
 	break;
+case 'gwas':
+	$rsid = $reference[1];
+	$url = "http://www.genome.gov/gwastudies/?snp={$rsid}&submit=Search#result_table";
+	break;
 case 'http':
 	$url = $references[0];
 	break;

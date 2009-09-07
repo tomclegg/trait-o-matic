@@ -27,7 +27,7 @@ SELECT p.pubmed_id,
   p.name
 FROM pharmgkb p
 WHERE (p.rsid=%s and (p.genotype=%s or p.genotype=%s))
- OR (p.gene=%s and p.amino_acid_change=%s)
+ OR (p.gene=%s and p.amino_acid_change in (%s,%s,%s,%s))
  ;
 '''
 
@@ -102,7 +102,11 @@ def main():
 
 			# query the database
 			cursor.execute(query, (rs, alleles[0], alleles[1],
-					       gene, acid_changes[2]))
+					       gene,
+					       acid_changes[0],
+					       acid_changes[1],
+					       acid_changes[2],
+					       acid_changes[3]))
 			data = cursor.fetchall()
 
 			# if this gene/AA change caused a hit, stop here and report it

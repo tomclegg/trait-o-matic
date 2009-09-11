@@ -329,12 +329,14 @@ class Results extends Controller {
 		
 		// grab the appropriate file
 		//TODO: kind of a hack for "ns"
-		$kind = ($what == "ns") ? "out/readme" : $what;
+		$kind = ($what == "ns" || $what == "dbsnp") ? "out/readme" : $what;
 		$data_file = $this->file->get(array('kind' => $kind, 'job' => $job), 1);
 		if (!$data_file)
 			return;
 		if ($what == "ns")
 			$data_file_path = dirname($data_file['path']) . "/ns.gff";
+		else if ($what == "dbsnp")
+			$data_file_path = dirname($data_file['path']) . "/genotype.dbsnp.gff";
 		else
 			$data_file_path = $data_file['path'];
 
@@ -357,7 +359,9 @@ class Results extends Controller {
 			// file to use the "genotype" file's
 			// extension)
 
-			$filename = hash_file('sha256', $data_file_path) . '.' . pathinfo($data_file['path'], PATHINFO_EXTENSION);
+			$ext = pathinfo($data_file['path'], PATHINFO_EXTENSION);
+			if (empty($ext)) $ext = "gff";
+			$filename = hash_file('sha256', $data_file_path) . '.' . $ext;
 		}
 		
 		// force download

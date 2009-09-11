@@ -62,7 +62,14 @@ header("Pragma: no-cache");
 					<?php echo ucfirst(lang($phenotypes['sex'])); ?>, <?php function r($v, $w) { if ($v != '') { $v .= ', '; } $v .= lang($w); return $v; } print array_reduce($phenotypes['ancestry'], 'r'); ?></p>
 
 <?php if ($this->config->item('enable_download_gff')): ?>
-					<p>Download <a href="/download/ns/<?php echo urlencode($job_id); ?>">nsSNPs</a> or <a href="/download/genotype/<?php echo urlencode($job_id); ?>">source data (all SNPs)</a>
+<p>Download:
+<br />&rarr; <a href="/download/genotype/<?php echo urlencode($job_id); ?>">source data</a>
+<?php if ($this->config->item('enable_download_dbsnp')): ?>
+<br />&rarr; <a href="/download/dbsnp/<?php echo urlencode($job_id); ?>">source data + dbSNP IDs + reference alleles</a>
+<?php endif; ?>
+<?php if ($this->config->item('enable_download_nssnp')): ?>
+<br />&rarr; <a href="/download/ns/<?php echo urlencode($job_id); ?>">nsSNPs</a>
+<?php endif; ?>
 <?php endif; ?>
 
 <?php

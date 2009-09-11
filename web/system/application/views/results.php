@@ -70,6 +70,9 @@ header("Pragma: no-cache");
 <?php if ($this->config->item('enable_download_nssnp')): ?>
 <br />&rarr; <a href="/download/ns/<?php echo urlencode($job_id); ?>">nsSNPs</a>
 <?php endif; ?>
+<?php if ($this->config->item('enable_download_json')): ?>
+<br />&rarr; <a href="/download/json/<?php echo urlencode($job_id); ?>">results in json format</a>
+<?php endif; ?>
 <?php endif; ?>
 
 <?php

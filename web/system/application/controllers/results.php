@@ -322,10 +322,30 @@ class Results extends Controller {
 		// load necessary modules
 		$this->load->model('File', 'file', TRUE);
 		$this->load->model('Job', 'job', TRUE);
+		$this->load->model('User', 'user', TRUE);
 		$this->load->helper('file');
 		$this->load->helper('json');
 		$this->load->helper('language');
 		$this->load->helper('warehouse');
+		$this->config->load('trait-o-matic');
+
+		if ($what == "json")
+		{
+			if (!$this->config->item('enable_download_json'))
+				return;
+			$job = $this->job->get(array('id' => $job),1);
+			$user = $this->user->get(array('id' => $job['user']),1);
+			$auth_user = $this->_authenticate();
+			$data = $this->_prep_results ($user, !$auth_user || $auth_user['id'] != $user['id']);
+			$filename = $user['username'];
+			if ($job['processed'])
+				$filename .= " ".$job['processed'];
+			$filename .= ".json";
+			header ("Content-type: text/json");
+			header ("Content-disposition: attachment; filename=\"{$filename}\"");
+			print json_encode ($data);
+			exit;
+		}
 		
 		// grab the appropriate file
 		//TODO: kind of a hack for "ns"

@@ -9,11 +9,15 @@ class Results extends Controller {
 	
 	function json()
 	{
+		// load necessary modules
+		$this->load->model('User', 'user', TRUE);
+
+		// authenticate
 		$user_details = $this->_authenticate();
 		if ($user_details !== FALSE)
 		{
 			$data = $this->_prep_results($this->user->get($user_details, 1));
-			$this->load->view('results', $data);
+			$this->load->view('json', $data);
 		}
 		else
 		{

@@ -15,6 +15,7 @@ header("Content-type: text/plain");
 <?php
 	$first_source = 1;
 foreach (array('omim' => 'OMIM', 'snpedia' => 'SNPedia', 'hgmd' => 'HGMD', 'pharmgkb' => 'PharmGKB', 'morbid' => 'Other hypotheses') as $k => $v):
+	if (!array_key_exists($k, $phenotypes)) continue;
 	if (!$first_source) { echo " ,\n"; }
 	$first_source = 0;
 		echo " \"", $k, "\": ["
@@ -121,7 +122,7 @@ case 'pmid':
     "gene": <?php if (array_key_exists('gene', $o) && array_key_exists('amino_acid_change', $o)): ?>"<?php echo $o['gene']; ?>",
     "gene_change": "<?php echo $o['amino_acid_change']; ?>"<?php else: ?>"not-computed"<?php endif; ?>,
     "genotype": "<?php echo $o['genotype']; ?>",
-<?php if (array_key_exists('trait_allele', $o)): ?>    "trait_allele": "<?php echo $o['trait_allele']; ?>"<?php endif; ?>,
+<?php if (array_key_exists('trait_allele', $o)): ?>    "trait_allele": "<?php echo $o['trait_allele']; ?>",<?php endif; ?>
     "url": "<?php echo $url; ?>",
     "phenotype": "<?php echo $o['phenotype']; ?>"
 <?php if (array_key_exists('score', $o)): ?>

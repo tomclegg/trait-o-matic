@@ -18,9 +18,10 @@ foreach (array('omim' => 'OMIM', 'snpedia' => 'SNPedia', 'hgmd' => 'HGMD', 'phar
 	if (!array_key_exists($k, $phenotypes)) continue;
 	if (!$first_source) { echo " ,\n"; }
 	$first_source = 0;
-		echo " \"", $k, "\": ["
 ?>
-
+ {"database": "<?echo $k?>", 
+  "records":
+  [
 <?php
 	$first_phenotype = 1;
 foreach ($phenotypes[$k] as $o):
@@ -131,6 +132,7 @@ case 'pmid':
 <?php endif; ?>
    }
 <?php endforeach; ?>
- ]
+  ]
+ }
 <?php endforeach; ?>
 }

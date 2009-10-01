@@ -316,7 +316,7 @@ class Results extends Controller {
 			$this->load->view('login', $data);
 			return FALSE;
 		}
-		return $user_details;
+		return $this->user->get($user_details, 1);
 	}
 	
 	// note that invoking this function incorrectly may permit bypassing

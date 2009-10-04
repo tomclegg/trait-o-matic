@@ -34,3 +34,6 @@ GENOTYPE_PASSWD = "shakespeare"
 GENOTYPE_DATABASE = "genotypes"
 
 REFERENCE_GENOME = os.getenv('HOME') + "/trait/hg18.2bit"
+
+WAREHOUSE_CONTROLLER = "templeton-controller:24848"
+WAREHOUSE_CONFIGURL = "http://templeton-controller:44848/config.py"

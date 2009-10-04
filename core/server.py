@@ -12,7 +12,7 @@ usage: %prog [options]
 # ---
 # This code is part of the Trait-o-matic project and is governed by its license.
 
-import base64, hashlib, os, shutil, subprocess, sys, urllib, urllib2, re
+import base64, hashlib, os, shutil, subprocess, sys, urllib, urllib2, re, warehouse
 from SimpleXMLRPCServer import SimpleXMLRPCServer as xrs
 from tempfile import mkstemp
 from utils import doc_optparse
@@ -153,14 +153,14 @@ def main():
 		return output_dir
 	server.register_function(submit_local)
 	
-	def copy_to_warehouse(genotype_file, coverage_file, phenotype_file, trackback_url='', request_token='', recopy=True):
+	def copy_to_warehouse(genotype_file, coverage_file, phenotype_file, trackback_url='', request_token='', recopy=True, tag=False):
 		# execute script
 		script_dir = os.path.dirname(sys.argv[0])
 		output_dir = os.path.dirname(genotype_file)
 
-		g_locator = _copy_file_to_warehouse (genotype_file, "genotype.gff")
-		c_locator = _copy_file_to_warehouse (coverage_file, "coverage")
-		p_locator = _copy_file_to_warehouse (phenotype_file, "phenotype.json")
+		g_locator = _copy_file_to_warehouse (genotype_file, "genotype.gff", tag, "genotype")
+		c_locator = _copy_file_to_warehouse (coverage_file, "coverage", tag, "coverage")
+		p_locator = _copy_file_to_warehouse (phenotype_file, "profile.json", tag, "profile")
 		if (g_locator != None and
 		    c_locator != None and
 		    p_locator != None):
@@ -168,7 +168,7 @@ def main():
 		return None
 	server.register_function(copy_to_warehouse)
 
-	def _copy_file_to_warehouse (source_file, target_filename=None, trackback_url=None, recopy=True):
+	def _copy_file_to_warehouse (source_file, target_filename=None, tag=False, data_type=None, trackback_url=None, recopy=True):
 		if not source_file:
 			return ''
 
@@ -210,6 +210,18 @@ def main():
 			try:
 				os.symlink(locator, source_file + '-locator.tmp')
 				os.rename(source_file + '-locator.tmp', source_file + '-locator')
+				if tag:
+					share_name = "/" + os.uname()[1] + "/Trait-o-matic/" + tag + "/" + data_type
+					share_target = re.sub("warehouse:///", "", locator)
+					old_target = warehouse.name_lookup (share_name)
+					whargs = ["wh",
+						  "manifest",
+						  "name",
+						  "name=" + share_name,
+						  "newkey=" + share_target]
+					if old_target:
+						whargs.append ("oldkey=" + old_target)
+					subprocess.call (whargs)
 			except OSError:
 				print >> sys.stderr, 'Ignoring error creating symlink ' + source_file + '-locator'
 			if trackback_url:

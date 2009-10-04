@@ -110,10 +110,10 @@ class Results extends Controller {
 		
 		// now actually do some work!
 		$this->job->update(array('public' => $job_public_mode), array('id' => $job));
-		if ($job_public_mode > 0 &&
+		if ($job_public_mode >= 0 &&
 		    $this->config->item ("enable_warehouse_storage"))
 		{
-			$this->_share($job);
+			$this->_share($job, $user['username']);
 		}
 		$this->load->view('confirm_chmod');
 	}
@@ -152,12 +152,13 @@ class Results extends Controller {
 			return;
 		}
 
-		$this->_share($job);
+		$this->_share($job, $user['username']);
 		$this->load->view('confirm_share');
 	}
 
-	function _share($job)
+	function _share($job, $share_tag)
 	{
+		$share_tag = ereg_replace(" ","_",$share_tag);
 		$path = array();
 		foreach (array ('genotype', 'coverage', 'phenotype') as $kind)
 		{
@@ -170,7 +171,7 @@ class Results extends Controller {
 		//TODO: move server address into a config file
 		$this->xmlrpc->server('http://localhost/', 8080);
 		$this->xmlrpc->method('copy_to_warehouse');
-		$request = array($path['genotype'], $path['coverage'], $path['phenotype'], '', '', TRUE);
+		$request = array($path['genotype'], $path['coverage'], $path['phenotype'], '', '', TRUE, $share_tag);
 		$this->xmlrpc->request($request);
 		if (!$this->xmlrpc->send_request())
 		{

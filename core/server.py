@@ -175,11 +175,15 @@ def main():
 		# if file is special symlink, return link target
 		if os.path.islink(source_file):
 			if re.match('warehouse://.*', os.readlink(source_file)):
-				return os.readlink(source_file)
+				locator = os.readlink(source_file)
+				_update_warehouse_name_list (locator, target_filename, tag, data_type)
+				return locator
 
 		# if file has already been copied to warehouse, do not recopy
 		if not recopy and os.path.islink(source_file + '-locator'):
-			return os.readlink(source_file + '-locator')
+			locator = os.readlink(source_file + '-locator')
+			_update_warehouse_name_list (locator, target_filename, tag, data_type)
+			return locator
 
 		# if copying is required, fork a child process and return now
 		if os.fork() > 0:
@@ -210,18 +214,7 @@ def main():
 			try:
 				os.symlink(locator, source_file + '-locator.tmp')
 				os.rename(source_file + '-locator.tmp', source_file + '-locator')
-				if tag:
-					share_name = "/" + os.uname()[1] + "/Trait-o-matic/" + tag + "/" + data_type
-					share_target = re.sub("warehouse:///", "", locator)
-					old_target = warehouse.name_lookup (share_name)
-					whargs = ["wh",
-						  "manifest",
-						  "name",
-						  "name=" + share_name,
-						  "newkey=" + share_target]
-					if old_target:
-						whargs.append ("oldkey=" + old_target)
-					subprocess.call (whargs)
+				_update_warehouse_name_list (locator, target_filename, tag, data_type)
 			except OSError:
 				print >> sys.stderr, 'Ignoring error creating symlink ' + source_file + '-locator'
 			if trackback_url:
@@ -234,6 +227,20 @@ def main():
 			os._exit(0)
 		os._exit(1)
 	
+	def _update_warehouse_name_list (locator, target_filename, tag, data_type):
+		if tag:
+			share_name = "/" + os.uname()[1] + "/Trait-o-matic/" + tag + "/" + data_type
+			share_target = re.sub("warehouse:///", "", locator)
+			old_target = warehouse.name_lookup (share_name)
+			whargs = ["wh",
+				  "manifest",
+				  "name",
+				  "name=" + share_name,
+				  "newkey=" + share_target]
+			if old_target:
+				whargs.append ("oldkey=" + old_target)
+			subprocess.call (whargs)
+
 	# run the server's main loop
 	server.serve_forever()
 

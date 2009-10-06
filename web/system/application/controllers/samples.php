@@ -13,12 +13,12 @@ class Samples extends Controller {
 		$this->load->model('Job', 'job', TRUE);
 		$this->load->model('User', 'user', TRUE);
 		
-		// find the 20 most recent samples
+		// find the 50 most recent samples
 		$data['samples'] = array();
 		$this->db->select('user');
 		$this->db->distinct();
 		$this->db->group_by('submitted', 'desc');
-		$sample_users = $this->job->get(array('public' => 1), 20);
+		$sample_users = $this->job->get(array('public' => 1), 50);
 		foreach ($sample_users as $u)
 		{
 			$user = $this->user->get(array('id' => $u['user']), 1);

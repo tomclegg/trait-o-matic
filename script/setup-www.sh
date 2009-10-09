@@ -3,29 +3,57 @@
 set -e
 
 WGET='wget -c -nv'
-SOURCE=$HOME/trait-o-matic
-TARGET=$HOME/www
-CONFIG=$HOME/config
-cd
-$WGET http://codeigniter.com/download.php
-rm -Rf CodeIgniter_1.7.1
-unzip -q CodeIgniter_1.7.1.zip
-cd CodeIgniter_1.7.1
-rm -Rf $TARGET
-mkdir $TARGET
-cp index.php $TARGET
-cp -R system $TARGET/system
-cp -R $SOURCE/web/errors $TARGET
-cp -R $SOURCE/web/media $TARGET
-cp -R $SOURCE/web/scripts $TARGET
-cp -R $SOURCE/web/statistics $TARGET
-rm -Rf $TARGET/system/application
-cp -R $SOURCE/web/system/application $TARGET/system/application
-cp $SOURCE/web/htaccess $TARGET/.htaccess
+if [ -z "$SOURCE" ]; then SOURCE=$HOME/trait-o-matic; fi
+if [ -z "$TARGET" ]; then TARGET=$HOME/www; fi
+if [ -z "$CONFIG" ]; then CONFIG=$HOME/config; fi
+if [ -z "$TMP" ]; then TMP=$HOME/tmp; fi
+if [ -z "$CI_VERSION" ]; then CI_VERSION=1.7.1; fi
+if [ -z "$TEXTILE_VERSION" ]; then TEXTILE_VERSION=2.0.0; fi
+
+mkdir -p $TMP
+cd $TMP
+
+# Todo: use "$WGET http://codeigniter.com/download.php", figure out
+# which version was downloaded, and set CI_VERSION (if not provided in
+# env)
+
+$WGET http://codeigniter.com/download_files/CodeIgniter_$CI_VERSION.zip
+$WGET http://textile.thresholdstate.com/file_download/2/textile-$TEXTILE_VERSION.tar.gz
+
+rm -Rf CodeIgniter_$CI_VERSION
+unzip -q CodeIgniter_$CI_VERSION.zip
+cd CodeIgniter_$CI_VERSION
+mkdir -p $TARGET
+tar cf - index.php system | tar -C $TARGET -xf -
+
+cd $TMP
+rm -rf textile-$TEXTILE_VERSION
+tar xzf textile-$TEXTILE_VERSION.tar.gz
+cd textile-$TEXTILE_VERSION
+cp classTextile.php $TARGET/system/application/libraries/Textile.php
+
+cd $SOURCE/web
+tar cf - errors media scripts statistics system/application htaccess | tar -C $TARGET -xf -
+
+cd $TARGET
+mv htaccess .htaccess
+
+
 for conf in config database trait-o-matic
 do
-  ln -s $CONFIG/$conf.php $TARGET/system/application/config/$conf.php
-  if cp -i $TARGET/system/application/config/$conf.default.php $CONFIG/$conf.php
+  if [ ! -s $TARGET/system/application/config/$conf.php ] \
+     && mv -i $TARGET/system/application/config/$conf.php $CONFIG/$conf.php 2>/dev/null
+  then
+    echo >&2 "*** "
+    echo >&2 "*** Moved $TARGET/system/application/config/conf.php"
+    echo >&2 "*** to $CONFIG/conf.php"
+    echo >&2 "*** "
+  fi
+  if [ ! -e $TARGET/system/application/config/$conf.php ]
+  then
+    ln -s $CONFIG/$conf.php $TARGET/system/application/config/$conf.php
+  fi
+  if cp -i $TARGET/system/application/config/$conf.default.php $CONFIG/$conf.php 2>/dev/null
   then
     echo >&2 "*** "
     echo >&2 "*** Please edit $CONFIG/$conf.php to suit your installation."

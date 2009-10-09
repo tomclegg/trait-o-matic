@@ -1,19 +1,7 @@
-<?php
-// always expired, always modified
-header("Expires: Sat, 05 Nov 2005 00:00:00 GMT");
-header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-
-// HTTP/1.1
-header("Cache-Control: no-store, no-cache, must-revalidate");
-header("Cache-Control: post-check=0, pre-check=0", false);
-
-// HTTP/1.0
-header("Pragma: no-cache");
-?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-	<title>Trait-o-matic</title>
+	<title><?= $title ?> - Trait-o-matic</title>
 	<link rel="stylesheet" media="screen" type="text/css" href="/media/styles.css">
 	<link rel="stylesheet" media="screen" type="text/css" href="/media/index.css">
 	<!--[if lte IE 7]><link rel="stylesheet" media="screen" type="text/css" href="/media/styles-ie.css"><![endif]-->
@@ -43,14 +31,13 @@ header("Pragma: no-cache");
 				<span class="bullet"> &nbsp;&bull;&nbsp; </span>
 				<span class="link"><a href="/query/">Submit Query</a></span>
 				<span class="bullet"> &nbsp;&bull;&nbsp; </span>
-				<span class="current">Retrieve Results</span>
+				<span class="link"><a href="/results/">Retrieve Results</a></span>
 			</p>
 		</div>
 	</div></div>
 	<div id="body"><div>
 		<div id="main">
-			<h3>Transfer to shared storage has been initiated.</h3>
-			<p><a href="/results/">Return to your results &rarr;</a></p>
+			<?=$body?>
 		</div>
 	</div></div>
 	<div id="foot"><div>

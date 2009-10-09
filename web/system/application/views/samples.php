@@ -35,7 +35,7 @@ header("Pragma: no-cache");
 		<div id="menu">
 			<p>
 				<span class="description"><em>See also:</em></span>
-				<span class="link"><a href="http://github.com/xwu/trait-o-matic/wikis">Documentation</a></span>
+				<span class="link"><a href="/docs/">Documentation</a></span>
 				<span class="bullet"> &nbsp;&bull;&nbsp; </span>
 				<span class="link"><a href="http://github.com/xwu/trait-o-matic/tree">Code Repository</a></span>
 			</p>

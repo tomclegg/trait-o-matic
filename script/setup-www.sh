@@ -20,10 +20,13 @@ cd $TMP
 $WGET http://codeigniter.com/download_files/CodeIgniter_$CI_VERSION.zip
 $WGET http://textile.thresholdstate.com/file_download/2/textile-$TEXTILE_VERSION.tar.gz
 
+mkdir -p $TARGET
+
 rm -Rf CodeIgniter_$CI_VERSION
 unzip -q CodeIgniter_$CI_VERSION.zip
 cd CodeIgniter_$CI_VERSION
-mkdir -p $TARGET
+rm system/application/config/config.php
+rm system/application/config/database.php
 tar cf - index.php system | tar -C $TARGET -xf -
 
 cd $TMP
@@ -41,19 +44,28 @@ mv htaccess .htaccess
 
 for conf in config database trait-o-matic
 do
-  if [ ! -s $TARGET/system/application/config/$conf.php ] \
-     && mv -i $TARGET/system/application/config/$conf.php $CONFIG/$conf.php 2>/dev/null
+  # If existing config file is a regular file (not symlink), and there
+  # is no site config, move the config to the site config dir
+  if [ -e $TARGET/system/application/config/$conf.php ] \
+     && [ ! -s $TARGET/system/application/config/$conf.php ] \
+     && [ ! -e $CONFIG/$conf.php ] \
+     && mv -i $TARGET/system/application/config/$conf.php $CONFIG/$conf.php
   then
     echo >&2 "*** "
     echo >&2 "*** Moved $TARGET/system/application/config/conf.php"
     echo >&2 "*** to $CONFIG/conf.php"
     echo >&2 "*** "
   fi
+
+  # If it doesn't already exist, make a symlink from CI config dir to
+  # the real site config dir
   if [ ! -e $TARGET/system/application/config/$conf.php ]
   then
     ln -s $CONFIG/$conf.php $TARGET/system/application/config/$conf.php
   fi
-  if cp -i $TARGET/system/application/config/$conf.default.php $CONFIG/$conf.php 2>/dev/null
+
+  if [ ! -e $CONFIG/$conf.php ] \
+     && cp -i $TARGET/system/application/config/$conf.default.php $CONFIG/$conf.php
   then
     echo >&2 "*** "
     echo >&2 "*** Please edit $CONFIG/$conf.php to suit your installation."

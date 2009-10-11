@@ -52,11 +52,13 @@ if [ ! -f dbSNP.stamp ]; then
   touch dbSNP.stamp
 fi
  
-# HapMap
-if [ ! -f hapmap.stamp ]; then
-  try_whget /Trait-o-matic/data/hapmap ftp.hapmap.org || \
-  $WGET -r -l1 --accept allele\* --no-parent http://ftp.hapmap.org/frequencies/2009-02_phaseII+III/forward/non-redundant/
-  rm -f ftp.hapmap.org/frequencies/2009-02_phaseII+III/forward/non-redundant/genotype* || true
+# HapMap (quick version)
+if [ ! -f hapmap.stamp ] \
+   && try_whget /Trait-o-matic/data/hapmap27.bin . \
+   && chmod 660 hapmap27.* \
+   && sudo chown mysql:mysql hapmap27.* \
+   && sudo mv hapmap27.* /var/lib/mysql/caliban/
+then
   touch hapmap.stamp
 fi
  
@@ -121,14 +123,24 @@ if [ ! -f load.stamp ]; then
   touch load.stamp
 fi
 
-# HapMap
-echo Loading HapMap data, this could take hours...
-for file in ftp.hapmap.org/frequencies/2009-02_phaseII+III/forward/non-redundant/allele_* ; do
-  cat=cat
-  if [ "${file##*.}" = bz2 ]; then cat="bzip2 -cd"; fi
-  if [ "${file##*.}" = gz ]; then cat="gzip -cd"; fi
-  if [ ! -f $file.stamp ]; then
-    $cat $file | python $CORE/hapmap_load_database.py && touch $file.stamp
+# HapMap (slow version)
+if [ ! -f hapmap.stamp ]; then
+  if [ ! -f hapmapfiles.stamp ]; then
+    try_whget /Trait-o-matic/data/hapmap ftp.hapmap.org || \
+    $WGET -r -l1 --accept allele\* --no-parent http://ftp.hapmap.org/frequencies/2009-02_phaseII+III/forward/non-redundant/
+    rm -f ftp.hapmap.org/frequencies/2009-02_phaseII+III/forward/non-redundant/genotype* || true
+    touch hapmapfiles.stamp
   fi
-done
-
+  echo
+  echo "*** Loading HapMap data, this could take hours..."
+  echo
+  for file in ftp.hapmap.org/frequencies/2009-02_phaseII+III/forward/non-redundant/allele_* ; do
+    cat=cat
+    if [ "${file##*.}" = bz2 ]; then cat="bzip2 -cd"; fi
+    if [ "${file##*.}" = gz ]; then cat="gzip -cd"; fi
+    if [ ! -f $file.stamp ]; then
+      $cat $file | python $CORE/hapmap_load_database.py && touch $file.stamp
+    fi
+  done
+  touch hapmap.stamp
+fi

@@ -2,7 +2,7 @@
 # Filename: config.py
 import os
 
-UPLOAD_DIR = os.getenv('HOME') + "/upload"
+UPLOAD_DIR = os.getenv('UPLOAD')
 DB_HOST = "localhost"
 
 DB_READ_USER = "reader"
@@ -33,7 +33,7 @@ GENOTYPE_USER = "updater"
 GENOTYPE_PASSWD = "shakespeare"
 GENOTYPE_DATABASE = "genotypes"
 
-REFERENCE_GENOME = os.getenv('HOME') + "/data/hg18.2bit"
+REFERENCE_GENOME = os.getenv('DATA') + "/hg18.2bit"
 
 WAREHOUSE_CONTROLLER = "templeton-controller:24848"
 WAREHOUSE_CONFIGURL = "http://templeton-controller:44848/config.py"

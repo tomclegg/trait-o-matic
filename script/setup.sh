@@ -10,8 +10,8 @@ cp /etc/php5/apache2/php.ini /tmp
 sudo cp /tmp/php.ini /etc/php5/apache2/php.ini
 
 # Create dirs
-sudo -u "$USER" mkdir -p ~/tmp ~/upload ~/log
-sudo -u "$USER" chmod a+rwxt ~/tmp ~/upload
+sudo -u "$USER" mkdir -p $TMP $UPLOAD $LOG
+if [ "$USER" != www-data ]; then sudo -u "$USER" chmod a+rwxt $TMP $UPLOAD; fi
 
 # Apache config
 perl -p -e 's/%([A-Z]+)%/$ENV{$1}/g' < trait-apache-site.in > /tmp/trait-apache-site
@@ -24,7 +24,7 @@ sudo a2dissite default
 sudo /etc/init.d/apache2 restart
 
 # Init script
-sudo perl -p -e 's/%([A-Z]+)%/$ENV{$1}/g' < ../core/trait.sh.in > /tmp/trait-o-matic
+sudo perl -p -e 's/%([A-Z]+)%/$ENV{$1}/g' < $SOURCE_DIR/script/trait-o-matic.in > /tmp/trait-o-matic
 chmod 755 /tmp/trait-o-matic
 sudo cp /tmp/trait-o-matic /etc/init.d/trait-o-matic
 sudo update-rc.d trait-o-matic start 20 2 3 4 5 . stop 80 0 1 6 .

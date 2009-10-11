@@ -7,7 +7,7 @@ To install the latest version of Trait-o-matic, issue the following commands.  _
 bc. cd
 chmod a+x ~
 sudo apt-get update
-sudo apt-get install git git-core
+sudo apt-get -qq install git git-core
 git clone git://github.com/tomclegg/trait-o-matic.git
 cd trait-o-matic/script
 sudo mkdir /home/trait
@@ -50,20 +50,7 @@ echo '
 
 Populate the databases with reference data.  _(This takes quite a while, even if you're downloading the data from the local cluster.)_
 
-bc. sudo -u www-data USER=www-data HOME=/home/trait ./setup-external-data.sh
-
-It is a peculiarity of the current storage system that permanent files are by default stored in <code>/tmp</code>; if you have a second volume mounted at <code>/scratch</code> with more ample storage space, you can move <code>/tmp</code> to <code>/scratch/tmp</code>:
-
-<pre>
-sudo mv /tmp /scratch/tmp
-sudo ln -s /scratch/tmp /tmp
-</pre>
-
-Either way, you should configure /tmp not to be wiped on reboot:
-
-<pre>
-sudo sed -i'.bak' 's/TMPTIME=0/TMPTIME=-1/' /etc/default/rcS
-</pre>
+bc. sudo -u www-data USER=www-data HOME=/home/trait IMPORT_BINARY=1 ./setup-external-data.sh
 
 Finally, start the Trait-o-matic core XMLRPC server.
 

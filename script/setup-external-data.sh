@@ -54,6 +54,7 @@ fi
  
 # HapMap (quick version)
 if [ ! -f hapmap.stamp ] \
+   && [ ! -z "$IMPORT_BINARY" ] \
    && try_whget /Trait-o-matic/data/hapmap27.bin . \
    && chmod 660 hapmap27.*
 then
@@ -85,11 +86,21 @@ if [ ! -f refFlat.stamp ]; then
   touch refFlat.stamp
 fi
  
+# snp/UCSC (quick version)
+if [ ! -f snp129.stamp ] \
+   && [ ! -z "$IMPORT_BINARY" ] \
+   && try_whget /Trait-o-matic/data/snp129.bin . \
+   && chmod 660 snp129.frm snp129.MYD snp129.MYI
+then
+  touch snp129.stamp snp129quick.stamp
+fi
+ 
 # snp/UCSC
 if [ ! -f snp129.stamp ]; then
   try_whget  /Trait-o-matic/data/snp129 . || \
   $WGET http://hgdownload.cse.ucsc.edu/goldenPath/hg18/database/snp129.txt.gz
-  $GUNZIP -c snp129.txt.gz | mysql -uupdater -p"$MYSQL_PASS" -e "USE caliban; LOAD DATA LOCAL INFILE '/dev/stdin' INTO TABLE snp129 FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';"
+  echo Importing snp129 data into MySQL.
+  $GUNZIP -c snp129.txt.gz | mysql -uupdater -p"$MYSQL_PASS" -e "USE caliban; TRUNCATE snp129; LOAD DATA LOCAL INFILE '/dev/stdin' INTO TABLE snp129 FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';"
   touch snp129.stamp
   rm -f snp129.txt
 fi
@@ -141,6 +152,22 @@ if [ ! -f hapmap.stamp ]; then
     fi
   done
   touch hapmap.stamp
+fi
+
+if [ -f snp129quick.stamp ] && [ -f snp129.MYD ]
+then
+  cat >&2 <<EOF
+***
+*** IMPORTANT: in order to complete the snp129 import, you need to execute
+*** the following commands:
+***
+    (
+    cd $DATA
+    sudo chown mysql:mysql snp129.MYD snp129.MYI snp129.frm
+    sudo mv snp129.MYD snp129.MYI snp129.frm /var/lib/mysql/caliban/
+    )
+***
+EOF
 fi
 
 if [ -f hapmapquick.stamp ] && [ -f hapmap27.MYD ]

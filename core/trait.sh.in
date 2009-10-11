@@ -3,10 +3,10 @@
 # chkconfig: 2345 20 80 
 # description: Trait-o-matic service
 
-USER=%USER%
-HOME="`sh -c "echo ~$USER"`"
-SERVER="$HOME/trait-o-matic/core/server.py"
-SERVER_PID="$HOME/tmp/server.pid"
+USER="%USER%"
+HOME="%HOME%"
+SERVER="$HOME/core/server.py"
+SERVER_PID="%TMP%/server.pid"
 
 start() {
 	if [ -f "$SERVER_PID" ] && [ -n "$(ps -p "$(< $SERVER_PID)" -o cmd=)" ]; then

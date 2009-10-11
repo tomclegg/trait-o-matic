@@ -1,91 +1,72 @@
 Complete source code for Trait-o-matic is now available in the repository but lacks thorough commenting. The following are instructions detailing how code from the repository can be used to install a fully working mirror.
 
-h2. Prerequisites
+h2. Installing from source
 
-From a fresh install of Ubuntu (Hardy Heron) on a virtual node with AMD64 processors, the following commands were issued:
+To install the latest version of Trait-o-matic, issue the following commands.  _(This procedure was tested on Debian/GNU Linux version "lenny" and should work equally well on Ubuntu version "hardy" or later versions.)_
 
-<script src="http://gist.github.com/132735.js"></script>
+bc. cd
+chmod a+x ~
+sudo apt-get update
+sudo apt-get install git git-core
+git clone git://github.com/tomclegg/trait-o-matic.git
+cd trait-o-matic/script
+sudo mkdir /home/trait
+sudo chown www-data:www-data /home/trait
+USER=www-data HOME=/home/trait PORT=80 ./install-root.sh
+#
+# Note prompt to set up a mysql root password during mysql-server install
+#
+sudo -u www-data USER=www-data HOME=/home/trait ./install-user.sh
 
-Configuration of Apache and Sendmail settings then took place. In particular:
-* In <code>/etc/hostname</code>, the existing hostname was deleted and replaced by the fully qualified hostname
-* In <code>/etc/hosts</code>, the fully qualified hostname was inserted before the existing hostname
-* In <code>/etc/mail/sendmail.mc</code>, the existing hostname was deleted and replaced by the fully qualified hostname in the <code>MASQUERADE_AS</code> option, and all features were moved before <code>MAILER_DEFINITIONS</code>
-* In <code>/etc/apache2/sites-available/default</code>, <code>ServerSignature On</code> was replaced by <code>ServerSignature Off</code>
-* In <code>/etc/apache2/sites-available/default</code>, the following was added and/or modified:
+Optionally, set up email so users can receive notifications when their
+jobs finish:
 
-<script src="http://gist.github.com/132749.js"></script>
+bc. sudo apt-get install exim4
 
-* In <code>/etc/php5/apache2/php.ini</code>, the following settings were modified to those values indicated below:
+Check the configuration:
 
-<script src="http://gist.github.com/132788.js"></script>
+bc. cd ~/trait-o-matic/script
+./check.sh
 
-The following commands were then issued:
+If your installation has access to a Free Factories storage system, set up the Free Factories client library now.  If the reference data is available on your cluster, this step will make the following step proceed _much_ faster.
 
-<pre>
-sudo chown www-data:www-data /var/www
-sudo chmod 777 /var/www
-sudo apache2ctl graceful
-sudo sendmailconfig
-</pre>
+bc. echo "deb http://dev.freelogy.org/apt hardy main contrib non-free" \
+ | sudo tee -a /etc/apt/sources.list
+wget -q http://dev.freelogy.org/53212765.key -O- |sudo apt-key add -
+sudo apt-get update
+sudo apt-get install libwarehouse-perl
 
-h2. Core
+Configure the Free Factories client library:
 
-Trait-o-matic source can be retrieved by downloading from GitHub; core components were extracted and copied to <code>/usr/share/trait</code>, the necessary Pyrex extensions were compiled in-place, and then the XMLRPC init script (by which Trait-o-matic responds to requests) was copied to the correct directory and installed:
+bc. [ -e /etc/warehouse/warehouse-client.conf ] || (
+sudo mkdir -p /etc/warehouse
+echo '
+   $Warehouse::warehouses=[{name=>"templeton",configurl=>
+   "http://templeton-controller.oxf.freelogy.org:44848/warehouse-client.conf"
+   }];
+   1;
+' | sudo tee /etc/warehouse/warehouse-client.conf >/dev/null
+)
 
-<script src="http://gist.github.com/132743.js"></script>
+Populate the databases with reference data.  _(This takes quite a while, even if you're downloading the data from the local cluster.)_
 
-Databases, database users, and database tables were created for access to MySQL (note that it is advised to change the password from the default <code>shakespeare</code>, and that the file <code>/usr/share/trait/config.py</code> must be updated accordingly). The SQL commands issued were as follows:
+bc. sudo -u www-data USER=www-data HOME=/home/trait ./setup-external-data.sh
 
-<script src="http://gist.github.com/132739.js"></script>
-
-Reference genome data were retrieved in 2bit format from UCSC and saved to the path indicated in <code>/usr/share/trait/config.py</code> (by default, <code>/var/trait/hg18.2bit</code>) and other data to be stored in database tables were retrieved from their respective sources:
-
-<script src="http://gist.github.com/132744.js"></script>
-
-Data tables were loaded with the following MySQL commands:
-
-<script src="http://gist.github.com/132767.js"></script>
-
-It is a peculiarity of the current storage system that permanent files are by default stored in <code>/tmp</code>; with a second volume mounted at <code>/scratch</code> with more ample storage space, <code>/tmp</code> was then moved to <code>/scratch/tmp</code> and configured not to be wiped on reboot:
+It is a peculiarity of the current storage system that permanent files are by default stored in <code>/tmp</code>; if you have a second volume mounted at <code>/scratch</code> with more ample storage space, you can move <code>/tmp</code> to <code>/scratch/tmp</code>:
 
 <pre>
 sudo mv /tmp /scratch/tmp
 sudo ln -s /scratch/tmp /tmp
+</pre>
+
+Either way, you should configure /tmp not to be wiped on reboot:
+
+<pre>
 sudo sed -i'.bak' 's/TMPTIME=0/TMPTIME=-1/' /etc/default/rcS
 </pre>
 
-Then, the Trait-o-matic core XMLRPC server was started:
+Finally, start the Trait-o-matic core XMLRPC server.
 
 <pre>
-sudo /etc/init.d/trait.sh start
+sudo /etc/init.d/trait-o-matic start
 </pre>
-
-
-h2. Web
-
-CodeIgniter (1.7.1) was downloaded and installed. (Note: web components are compatible with CodeIgniter versions 1.7.0 and 1.7.1; other versions have not been tested.)
-
-<pre>
-cd
-wget http://codeigniter.com/download.php
-unzip CodeIgniter_1.7.1.zip
-cd CodeIgniter_1.7.1
-sudo cp index.php /var/www
-sudo cp -R system /var/www/system
-sudo mv -i /var/www/index.html /var/www/index.html.default
-</pre>
-
-Then, Trait-o-matic web components were copied into the correct directories:
-
-<pre>
-cd
-sudo cp -R xwu-trait-o-matic-*/web/errors /var/www
-sudo cp -R xwu-trait-o-matic-*/web/media /var/www
-sudo cp -R xwu-trait-o-matic-*/web/scripts /var/www
-sudo cp -R xwu-trait-o-matic-*/web/statistics /var/www
-sudo rm -Rf /var/www/system/application
-sudo cp -R xwu-trait-o-matic-*/web/system/application /var/www/system/application
-sudo cp xwu-trait-o-matic-*/web/htaccess /var/www/.htaccess
-</pre>
-
-Finally, <code>/var/www/system/application/config/config.php</code> was configured with the correct domain name. Additionally, <code>database.php</code> and <code>upload.php</code> were checked and updated with any necessary changes in setting.

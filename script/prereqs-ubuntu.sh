@@ -28,6 +28,3 @@ cat >&2 <<EOF
 *** universe in your apt source list
 ***
 EOF
-
-#$APTGET install sendmail
-

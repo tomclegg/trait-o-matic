@@ -55,11 +55,9 @@ fi
 # HapMap (quick version)
 if [ ! -f hapmap.stamp ] \
    && try_whget /Trait-o-matic/data/hapmap27.bin . \
-   && chmod 660 hapmap27.* \
-   && sudo chown mysql:mysql hapmap27.* \
-   && sudo mv hapmap27.* /var/lib/mysql/caliban/
+   && chmod 660 hapmap27.*
 then
-  touch hapmap.stamp
+  touch hapmap.stamp hapmapquick.stamp
 fi
  
 # morbidmap/OMIM
@@ -143,4 +141,20 @@ if [ ! -f hapmap.stamp ]; then
     fi
   done
   touch hapmap.stamp
+fi
+
+if [ -f hapmapquick.stamp ] && [ -f hapmap27.MYD ]
+then
+  cat >&2 <<EOF
+***
+*** IMPORTANT: in order to complete the HapMap import, you need to execute
+*** the following commands:
+***
+    (
+    cd $DATA
+    sudo chown mysql:mysql hapmap27.*
+    sudo mv hapmap27.* /var/lib/mysql/caliban/
+    )
+***
+EOF
 fi

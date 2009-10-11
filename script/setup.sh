@@ -24,7 +24,8 @@ sudo a2dissite default
 sudo /etc/init.d/apache2 restart
 
 # Init script
-sudo perl -p -e 's/%([A-Z]+)%/$ENV{$1}/g' < $SOURCE_DIR/script/trait-o-matic.in > /tmp/trait-o-matic
-chmod 755 /tmp/trait-o-matic
-sudo cp /tmp/trait-o-matic /etc/init.d/trait-o-matic
+perl -p -e 's/%([A-Z]+)%/$ENV{$1}/g' < $SOURCE_DIR/script/trait-o-matic.in | sudo tee /etc/init.d/trait-o-matic.tmp >/dev/null
+sudo chmod 755 /etc/init.d/trait-o-matic.tmp
+sudo chown 0:0 /etc/init.d/trait-o-matic.tmp
+sudo mv /etc/init.d/trait-o-matic.tmp /etc/init.d/trait-o-matic
 sudo update-rc.d trait-o-matic start 20 2 3 4 5 . stop 80 0 1 6 .

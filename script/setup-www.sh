@@ -1,8 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
-
-. "$(echo "$0" | sed -e 's/[^\/]*$//')defaults.sh"
 set -e
+. "$(echo "$0" | sed -e 's/[^\/]*$//')defaults.sh"
 
 WGET='wget -nv'
 
@@ -41,7 +40,7 @@ unzip -q $CI_FILE
 cd CodeIgniter_$CI_VERSION
 rm system/application/config/config.php
 rm system/application/config/database.php
-tar cf - index.php system | tar -C $TARGET -xf -
+tar cf - index.php system | tar -C $WWW -xf -
 
 # Install textile library
 
@@ -49,12 +48,12 @@ cd $TMP
 rm -rf textile-$TEXTILE_VERSION
 tar xzf $TEXTILE_FILE
 cd textile-$TEXTILE_VERSION
-cp classTextile.php $TARGET/system/application/libraries/Textile.php
+cp classTextile.php $WWW/system/application/libraries/Textile.php
 
 cd $SOURCE/web
-tar cf - errors media scripts statistics system/application htaccess | tar -C $TARGET -xf -
+tar cf - errors media scripts statistics system/application htaccess | tar -C $WWW -xf -
 
-cd $TARGET
+cd $WWW
 mv htaccess .htaccess
 
 
@@ -62,27 +61,27 @@ for conf in config database trait-o-matic
 do
   # If existing config file is a regular file (not symlink), and there
   # is no site config, move the config to the site config dir
-  if [ -e $TARGET/system/application/config/$conf.php ] \
-     && [ ! -L $TARGET/system/application/config/$conf.php ] \
+  if [ -e $WWW/system/application/config/$conf.php ] \
+     && [ ! -L $WWW/system/application/config/$conf.php ] \
      && [ ! -e $CONFIG/$conf.php ] \
-     && mv -i $TARGET/system/application/config/$conf.php $CONFIG/$conf.php
+     && mv -i $WWW/system/application/config/$conf.php $CONFIG/$conf.php
   then
     echo >&2 "*** "
-    echo >&2 "*** Moved $TARGET/system/application/config/conf.php"
+    echo >&2 "*** Moved $WWW/system/application/config/conf.php"
     echo >&2 "*** to $CONFIG/conf.php"
     echo >&2 "*** "
   fi
 
   # If it doesn't already exist, make a symlink from CI config dir to
   # the real site config dir
-  if [ ! -e $TARGET/system/application/config/$conf.php ] \
-     && [ ! -L $TARGET/system/application/config/$conf.php ]
+  if [ ! -e $WWW/system/application/config/$conf.php ] \
+     && [ ! -L $WWW/system/application/config/$conf.php ]
   then
-    ln -s $CONFIG/$conf.php $TARGET/system/application/config/$conf.php
+    ln -s $CONFIG/$conf.php $WWW/system/application/config/$conf.php
   fi
 
   # Put the latest defaults in $CONFIG
-  cp -p $TARGET/system/application/config/$conf.default.php $CONFIG/
+  cp -p $WWW/system/application/config/$conf.default.php $CONFIG/
 
   if [ ! -e $CONFIG/$conf.php -a ! -L $CONFIG/$conf.php ]
   then
@@ -102,5 +101,5 @@ do
 
   chmod 600 $CONFIG/$conf.php
 done
-perl -p -e 's/%([A-Z]+)%/$ENV{$1}/g' < $TARGET/system/application/config/upload.php.in > $TARGET/system/application/config/upload.php
+perl -p -e 's/%([A-Z]+)%/$ENV{$1}/g' < $WWW/system/application/config/upload.php.in > $WWW/system/application/config/upload.php
 

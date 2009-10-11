@@ -1,29 +1,28 @@
-Listen 0.0.0.0:%PORT%
-NameVirtualHost 0.0.0.0:%PORT%
+NameVirtualHost *:%PORT%
 <VirtualHost _default_:%PORT%>
 	ServerAdmin webmaster@localhost
 	<IfModule mod_deflate.c>
 		AddOutputFilterByType DEFLATE text/html text/plain text/xml text/javascript text/css application/x-javascript
 	</IfModule>
 	
-	DocumentRoot %HOME%/www
+	DocumentRoot %WWW%
 	<Directory />
 		Options FollowSymLinks
 		AllowOverride None
 	</Directory>
-	<Directory %HOME%/www/>
+	<Directory %WWW%/>
 		Options Indexes FollowSymLinks MultiViews
 		AllowOverride FileInfo
 		Order allow,deny
 		allow from all
 	</Directory>
-        <Directory %HOME%/www/query/>
+        <Directory %WWW%/query/>
                 <IfModule mod_php5.c>
                         php_value upload_max_filesize 1024M
                 </IfModule>
         </Directory>
 
-	ErrorLog %HOME%/log/error.log
+	ErrorLog %LOG%/error.log
 
 	# Possible values include: debug, info, notice, warn, error, crit,
 	# alert, emerg.

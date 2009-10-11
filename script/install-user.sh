@@ -1,7 +1,6 @@
 #!/bin/bash
 
 set -e
-
 . "$(echo "$0" | sed -e 's/[^\/]*$//')defaults.sh"
 
 mkdir -p $WWW

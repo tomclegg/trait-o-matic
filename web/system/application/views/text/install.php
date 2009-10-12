@@ -48,7 +48,7 @@ echo '
 ' | sudo tee /etc/warehouse/warehouse-client.conf >/dev/null
 )
 
-Populate the databases with reference data.  _(This takes quite a while, even if you're downloading the data from the local cluster.)_
+Populate the databases with reference data.  _(Note: This takes about 30 minutes if you're downloading the data from the local cluster, or 2-3 if you're downloading everything on a fast internet link.)_
 
 bc. sudo -u www-data USER=www-data HOME=/home/trait IMPORT_BINARY=1 ./setup-external-data.sh
 

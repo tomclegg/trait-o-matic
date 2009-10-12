@@ -5,7 +5,7 @@ set -e
 APTGET="apt-get -qq"
 
 $APTGET install \
-wget \
+wget rsync \
 zip unzip \
 apache2 \
 apache2-threaded-dev \

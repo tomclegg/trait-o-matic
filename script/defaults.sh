@@ -8,4 +8,4 @@ if [ -z "$LOG" ]; then export LOG=$HOME/log; fi
 if [ -z "$TMP" ]; then export TMP=$HOME/tmp; fi
 if [ -z "$PORT" ]; then export PORT=80; fi
 if [ -z "$UPLOAD" ]; then export UPLOAD=$HOME/upload; fi
-if [ -z "$SOURCE" ]; then SOURCE=$(dirname $(if [ ! -z $(dirname $0) -a $(dirname $0) != . ]; then cd $(dirname $0); fi; pwd)); fi
+if [ -z "$SOURCE" ]; then export SOURCE=$(dirname $(if [ ! -z $(dirname $0) ]; then cd $(dirname $0); fi; pwd)); fi

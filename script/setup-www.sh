@@ -56,6 +56,15 @@ tar cf - errors media scripts statistics system/application htaccess | tar -C $W
 cd $WWW
 mv htaccess .htaccess
 
+perl -pi~ - system/application/views/*.php <<'EOF'
+BEGIN {
+  $url = "http://github.com/$2"
+    if `grep -A2 origin $ENV{SOURCE}/.git/config` =~ m{(git\@github.com:|git://github.com/)(.*?)\.git}m;
+  print STDERR "$url\n";
+}
+s{href="http://github.com/xwu/trait-o-matic/tree"}{href="$url"}
+if $url && m{<a href=.*>Code Repository</a>}
+EOF
 
 for conf in config database trait-o-matic
 do

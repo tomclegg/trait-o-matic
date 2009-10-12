@@ -10,8 +10,7 @@ class Docs extends Controller
   function index()
   {
     $this->load->library ('Textile');
-    $docpage = $this->uri->rsegment(2);
-    if (empty($docpage) || $docpage == "index") $docpage = "install";
+    $docpage = $this->uri->segment(2, "install");
     $textile = $this->load->view ("text/$docpage", NULL, True);
     $html = $this->textile->TextileThis ($textile);
     $layout['title'] = $docpage;

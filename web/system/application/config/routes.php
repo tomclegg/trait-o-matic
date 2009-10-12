@@ -47,6 +47,7 @@ $route['share/(:any)'] = "results/share/$1";
 $route['download/(:any)/(:any)'] = "results/download/$1/$2";
 $route['reprocess/(:any)'] = "reprocess/index/$1";
 $route['samples/(:any)'] = "results/samples/$1";
+$route['docs/:any'] = "docs/index";
 
 /* End of file routes.php */
 /* Location: ./system/application/config/routes.php */

@@ -3,6 +3,8 @@
 
 """
 usage: %prog [options]
+  --pidfile=PATH: location of pid file
+  --stderr=PATH: location of log file
   -h, --host=STRING: the host on which to listen
   -p, --port=NUMBER: the port on which to listen
   -t, --trackback: invoke the server's trackback function with arguments url, path, kind, request_token (does not start a new server)
@@ -37,6 +39,22 @@ def main():
 	# parse options
 	option, args = doc_optparse.parse(__doc__)
 	
+	if option.stderr:
+		sysin = sys.stdin.fileno()
+		sysout = sys.stdout.fileno()
+		syserr = sys.stderr.fileno()
+		newout = file(option.stderr,'a+',0)
+		sys.stderr.flush()
+		sys.stdout.flush()
+		os.close(sysin)
+		os.close(sysout)
+		os.dup2(newout.fileno(), sysout)
+		os.close(sys.stderr.fileno())
+		os.dup2(newout.fileno(), syserr)
+
+	if option.pidfile:
+		file(option.pidfile,'w+').write("%d\n" % os.getpid())
+
 	# deal with the trackback option
 	if option.trackback:
 		if len(args) < 4:
@@ -114,7 +132,7 @@ def main():
 		         'pharmgkb_bin': os.path.join(script_dir, "gff_pharmgkb_map.py"),
 		         'H': os.path.join(script_dir, "json_allele_frequency_query.py"),
 		         'I': os.path.join(script_dir, "json_to_job_database.py"),
-		         'Z': os.path.join(script_dir, "server.py"),
+		         'Z': os.path.join(script_dir, "trait-o-matic-server.py"),
 		         'in': genotype_file,
 			 'fetch': fetch_command,
 		         'reference': REFERENCE_GENOME,
@@ -219,7 +237,7 @@ def main():
 				print >> sys.stderr, 'Ignoring error creating symlink ' + source_file + '-locator'
 			if trackback_url:
 				subprocess.call("python '%(Z)s' -t '%(url)s' '%(out)s' '%(source)s' '%(token)s'"
-						% { 'Z': os.path.join (script_dir, "server.py"),
+						% { 'Z': os.path.join (script_dir, "trait-o-matic-server.py"),
 						    'url': trackback_url,
 						    'out': locator,
 						    'source': source_file,

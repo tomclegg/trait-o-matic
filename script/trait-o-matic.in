@@ -3,46 +3,37 @@
 # chkconfig: 2345 20 80 
 # description: Trait-o-matic service
 
-USER="%USER%"
-HOME="%HOME%"
-LOG="%LOG%"
-CORE="%CORE%"
-DATA="%DATA%"
-SERVER="$CORE/server.py"
+export USER="%USER%"
+export LOG="%LOG%"
+export CORE="%CORE%"
+export DATA="%DATA%"
+SERVER="$CORE/trait-o-matic-server.py"
 SERVER_PID="%TMP%/server.pid"
 
-export DATA
-
 start() {
-	if [ -f "$SERVER_PID" ] && [ -n "$(ps -p "$(< $SERVER_PID)" -o cmd=)" ]; then
-		echo "Trait-o-matic server already running"
-	else
-		echo "Starting Trait-o-matic server..."
-		su $USER -c "python $SERVER &> $LOG/server.log" &
-		echo $! > $SERVER_PID
-	fi
+    echo Starting Trait-o-matic server.
+    start-stop-daemon --pidfile $SERVER_PID --user $USER --exec `which python` --background --chuid $USER --startas $SERVER --start -- --pidfile=$SERVER_PID --stderr=$LOG/server.log
 }
 
 stop() {
-	echo "Stopping Trait-o-matic server..."
-	su $USER -c "kill '$(< $SERVER_PID)'"
-	su $USER -c "rm '$SERVER_PID'"
+    echo Stopping Trait-o-matic server.
+    start-stop-daemon --pidfile $SERVER_PID --user $USER --exec `which python` --stop
 }
 
 case "$1" in
-	start)
-		start
-		;;
-	stop)
-		stop
-		;;
-	restart)
-		stop
-		start
-		;;
-	*)
-		echo "Usage: $0 start|stop|restart"
-		exit 1
-		;;
+    start)
+	start
+	;;
+    stop)
+	stop
+	;;
+    restart)
+	stop
+	start
+	;;
+    *)
+	echo "Usage: $0 start|stop|restart"
+	exit 1
+	;;
 esac
 exit $?

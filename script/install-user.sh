@@ -8,9 +8,9 @@ mkdir -p $CONFIG
 mkdir -p $TMP
 mkdir -p $DATA
 
-./setup-db.sh
-./setup-www.sh
-#./setup-external-data.sh
+$SCRIPT_DIR/setup-db.sh
+$SCRIPT_DIR/setup-www.sh
+# $SCRIPT_DIR/setup-external-data.sh
 
 rsync -a $SOURCE/core/ $CORE/
 if [ ! -L $CORE/config.py ]; then

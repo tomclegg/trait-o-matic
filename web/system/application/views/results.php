@@ -289,11 +289,11 @@ endforeach;
 			</div>
 		</div>
 	</div></div>
-<!-- processed <?php echo $processed ?> -->
+<!-- progress: <?= $progress_json ?> -->
 	<div id="foot"><div>
 		<div id="copyright">
 			<p>
-				<span>Copyright &copy; MMIX President and Fellows of Harvard College<br>[{elapsed_time} s]</span>
+				<span>Copyright &copy; MMIX President and Fellows of Harvard College<?php if(!isset($suppress_timing_data)): ?><br>[{elapsed_time} s]<?php endif; ?></span>
 			</p>
 		</div>
 	</div></div>

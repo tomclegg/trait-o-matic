@@ -437,8 +437,6 @@ class Results extends Controller {
 		$phenotype_path = $phenotype_file['path'];
 		$data['phenotypes'] = get_object_vars(json_decode(warehouse_fetch($phenotype_path)));
 		//TODO: error out if no file is found
-
-		$data['processed'] = $most_recent_job['processed'];
 		
 		// read results
 		$job_id = $most_recent_job['id'];
@@ -470,6 +468,12 @@ class Results extends Controller {
 					$data["locator"][$kind] = "";
 			}
 		}
+
+		if ($this->input->post('suppress-timing-data'))
+			$data['suppress_timing_data'] = 1;
+		else
+			$data['processed'] = $most_recent_job['processed'];
+		$data['progress_json'] = json_encode($this->_get_job_progress($most_recent_job['id']));
 
 		return $data;
 	}
@@ -546,6 +550,24 @@ class Results extends Controller {
 				@array_multisort($chromosome, SORT_NUMERIC, $coordinates, SORT_NUMERIC,
 				                 $gene, $amino_acid_position, SORT_NUMERIC, $phenotype, $data);
 		return $data;
+	}
+
+	function _get_job_progress ($job_id)
+	{
+		$this->load->model('File', 'file', TRUE);
+		$this->load->library('xmlrpc');
+		$this->load->helper('json');
+		$genotype_file = $this->file->get(array('kind' => 'genotype', 'job' => $job_id), 1);
+		//TODO: move server address into a config file
+		$this->xmlrpc->server('http://localhost/', 8080);
+		$this->xmlrpc->method('get_progress');
+		$request = array($genotype_file['path']);
+		$this->xmlrpc->request($request);
+		if (!$this->xmlrpc->send_request())
+		{
+			return array("status" => "error", "error" => $this->xmlrpc->display_error());
+		}
+		return $this->xmlrpc->display_response();
 	}
 }
 

@@ -20,6 +20,8 @@ from tempfile import mkstemp
 from utils import doc_optparse
 from config import UPLOAD_DIR, REFERENCE_GENOME
 
+script_dir = os.path.dirname(sys.argv[0])
+
 def trackback(url, params):
 	request = urllib2.Request(url, params)
 	request.add_header('User-agent', 'Trait-o-matic/20090123 Python')
@@ -104,9 +106,6 @@ def main():
 	server.register_function(submit)
 	
 	def submit_local(genotype_file, coverage_file='', trackback_url='', request_token=''):
-		# execute script
-		script_dir = os.path.dirname(sys.argv[0])
-
 		# create output dir
 		input_dir = os.path.dirname(genotype_file)
 		output_dir = input_dir + "-out"
@@ -117,17 +116,16 @@ def main():
 			print "Unexpected error:", sys.exc_info()[0]
 
 		# cache phenotype/profile data locally if it is a special symlink
-		if (os.path.islink(input_dir + "/phenotype")
+		if (os.path.islink(os.path.join(input_dir,"phenotype"))
 		    and
-		    re.match('warehouse://.*', os.readlink(input_dir + "/phenotype"))):
+		    re.match('warehouse://.*', os.readlink(os.path.join(input_dir,"phenotype")))):
 			cmd = '''(
 			set -e
-			cd '%(dir)s'
-			whget phenotype phenotype.%(pid)d
+			cd '%s'
+			whget phenotype phenotype.$$
 			mv phenotype phenotype-locator
-			mv --no-target-directory phenotype.%(pid)d phenotype
-			) &''' % { "dir": os.path.dirname(genotype_file),
-				   "pid": os.getpid()}
+			mv --no-target-directory phenotype.$$ phenotype
+			) &''' % os.path.dirname(genotype_file)
 			subprocess.call (cmd, shell=True)
 
 		# fetch from warehouse if genotype file is special symlink
@@ -162,8 +160,11 @@ def main():
 		         '7': os.path.join(output_dir, "snpedia.json"),
 		         'pharmgkb_out': os.path.join(output_dir, "pharmgkb.json"),
 		         '8': "",
-		         '0': os.path.join(output_dir, "README") }
+		         '0': os.path.join(output_dir, "README"),
+			 'lockfile': os.path.join(output_dir, "lock")}
 		cmd = '''(
+		flock --nonblock --exclusive 2 || exit
+		set -x
 		%(fetch)s '%(in)s' | python '%(A)s' '%(reference)s' /dev/stdin > '%(1)s'
 		python '%(B)s' '%(1)s' > '%(2)s'
 		python '%(C)s' '%(2)s' '%(reference)s' > '%(3)s'
@@ -181,14 +182,25 @@ def main():
 		python '%(Z)s' -t '%(url)s' '%(7)s' 'out/snpedia' '%(token)s'
 		python '%(Z)s' -t '%(url)s' '%(pharmgkb_out)s' 'out/pharmgkb' '%(token)s'
 		python '%(Z)s' -t '%(url)s' '%(0)s' 'out/readme' '%(token)s'
-		)&''' % args
+		rm -f %(lockfile)s
+		) 2>>%(lockfile)s &''' % args
 		subprocess.call(cmd, shell=True)
 		return output_dir
 	server.register_function(submit_local)
 
+	def get_progress(genotype_file):
+		output_dir = os.path.dirname(genotype_file) + "-out"
+		lockfile = os.path.join(output_dir,'lock')
+		# remove the lockfile if it is stale
+		subprocess.call('flock --nonblock --exclusive %(lock)s rm -f %(lock)s || true'
+				% { "lock": lockfile }, shell=True)
+		if os.path.exists(lockfile):
+			return { "state": "processing" }
+		else:
+			return { "state": "finished" }
+	server.register_function(get_progress)
+
 	def copy_to_warehouse(genotype_file, coverage_file, phenotype_file, trackback_url='', request_token='', recopy=True, tag=False):
-		# execute script
-		script_dir = os.path.dirname(sys.argv[0])
 		output_dir = os.path.dirname(genotype_file)
 
 		g_locator = _copy_file_to_warehouse (genotype_file, "genotype.gff", tag, "genotype")

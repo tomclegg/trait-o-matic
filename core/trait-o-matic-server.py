@@ -108,13 +108,28 @@ def main():
 		script_dir = os.path.dirname(sys.argv[0])
 
 		# create output dir
-		output_dir = os.path.dirname(genotype_file) + "-out"
+		input_dir = os.path.dirname(genotype_file)
+		output_dir = input_dir + "-out"
 		try:
 			if not os.path.exists(output_dir):
 				os.makedirs(output_dir)
 		except:
 			print "Unexpected error:", sys.exc_info()[0]
-		
+
+		# cache phenotype/profile data locally if it is a special symlink
+		if (os.path.islink(input_dir + "/phenotype")
+		    and
+		    re.match('warehouse://.*', os.readlink(input_dir + "/phenotype"))):
+			cmd = '''(
+			set -e
+			cd '%(dir)s'
+			whget phenotype phenotype.%(pid)d
+			mv phenotype phenotype-locator
+			mv --no-target-directory phenotype.%(pid)d phenotype
+			) &''' % { "dir": os.path.dirname(genotype_file),
+				   "pid": os.getpid()}
+			subprocess.call (cmd, shell=True)
+
 		# fetch from warehouse if genotype file is special symlink
 		fetch_command = "cat"
 		if os.path.islink(genotype_file):
@@ -170,7 +185,7 @@ def main():
 		subprocess.call(cmd, shell=True)
 		return output_dir
 	server.register_function(submit_local)
-	
+
 	def copy_to_warehouse(genotype_file, coverage_file, phenotype_file, trackback_url='', request_token='', recopy=True, tag=False):
 		# execute script
 		script_dir = os.path.dirname(sys.argv[0])

@@ -42,7 +42,7 @@ class Job extends Model {
 	{
 		return $this->db->update($this->_table, $set, $where);
 	}
-	
+
 	////////////////////////////////////////////
 	function update_timestamp($key, $where)
 	{

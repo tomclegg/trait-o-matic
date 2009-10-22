@@ -41,7 +41,7 @@ function reprocess_button($jobdata, $username=FALSE)
     . $ploc
     . '"><input type="hidden" name="username" value="'
     . htmlspecialchars($username)
-    . '"><input type="submit" name="submit-from-warehouse-form" value="Reprocess">'
+    . '"><input type="submit" name="submit-from-warehouse-form" value="Process here">'
     . '</form>';
 }
 
@@ -54,7 +54,10 @@ function results_link($job_or_username)
     return '<a href="/results/job/'
       . (0 + $job_or_username['id'])
       . '">'
-      . (array_key_exists('user', $job_or_username) ? htmlspecialchars($job_or_username['user']['username']) : "-")
+      . ((array_key_exists('user', $job_or_username) &&
+	  strlen(trim($job_or_username['user']['username'])))
+	 ? htmlspecialchars($job_or_username['user']['username'])
+	 : "(no username)")
       . '</a>';
   else
     return '<a href="/samples/'
@@ -118,22 +121,22 @@ foreach ($jobs as $j):
 				</table>
 			</div>
 <?php
-if (is_array($warehouse_data))
+if (isset($warehouse_data))
 foreach ($warehouse_data as $hostname => $host_data):
 ?>
 			<h3 class="toggle">Shared from <?php echo htmlspecialchars($hostname); ?> <span class="count">(<?php echo count($host_data); ?>)</span></h3>
 			<div class="data">
 				<table class="sortable data" width="100%">
-					<col width="40%">
-					<col width="20%">
-					<col width="20%">
+					<col width="30%">
+					<col width="25%">
+					<col width="25%">
 					<col width="20%">
 					<thead>
 					<tr>
 					<th scope="col" class="text"><div>Username</div></th>
 					<th scope="col" class="text"><div>Genotype locator</div></th>
 					<th scope="col" class="text"><div>Phenotype/profile locator</div></th>
-					<th scope="col" class="no-sort"><div><?=$hostname == $myhostname ? "Results" : "Reprocess data here"?></div></th>
+					<th scope="col" class="no-sort"><div><?=$hostname == $myhostname ? "Results" : "Processed locally?"?></div></th>
 					</tr>
 					</thead>
 					<tbody>
@@ -144,7 +147,20 @@ foreach ($host_data as $username => $jobdata):
 					<td scope="col"><?=htmlspecialchars($username)?></td>
 					<td scope="col"><?=nice($jobdata,'genotype_locator')?></td>
 					<td scope="col"><?=nice($jobdata,'profile_locator')?></td>
-					<td scope="col"><?=$hostname == $myhostname ? results_link($username) : reprocess_button($jobdata, $username)?></td>
+<?php
+if ($hostname == $myhostname)
+  $local_action = results_link($username);
+elseif (isset($locator2job) &&
+	array_key_exists('genotype_locator', $jobdata) &&
+	array_key_exists('profile_locator', $jobdata) &&
+	array_key_exists($x = implode(" ", array($jobdata['genotype_locator'],
+						 $jobdata['profile_locator'])), $locator2job) &&
+	($x = $locator2job[$x]))
+  $local_action = results_link($x);
+else
+  $local_action = reprocess_button($jobdata, $username);
+?>
+					<td scope="col"><?=$local_action?></td>
 					</tr>
 <?php endforeach; ?>
 <?php if (!sizeof($host_data)): ?>

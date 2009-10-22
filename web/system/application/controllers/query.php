@@ -317,6 +317,7 @@ class Query extends Controller {
 				// Skip trait form and go to user/pass form
 				$this->file->insert(array('job' => $job, 'kind' => 'phenotype', 'path' => $phenotype_path));
 				$data['job'] = $job;
+				$data['username'] = $this->input->post ('username');
 				$this->load->view('signup', $data);
 			}
 		}

@@ -7,23 +7,18 @@ class Results extends Controller {
 		parent::Controller();	
 	}
 	
-	function json()
+	function json($want_job_id=false)
 	{
 		// load necessary modules
 		$this->load->model('User', 'user', TRUE);
 
 		// authenticate
-		$user_details = $this->_authenticate();
-		if ($user_details !== FALSE)
-		{
-			$data = $this->_prep_results($this->user->get($user_details, 1));
-			$this->load->view('json', $data);
-		}
-		else
-		{
-			echo $this->input->post('username');
-			echo $this->input->post('password');
-		}
+		$user_details = $this->_authenticate(TRUE);
+		if (!$user_details)
+			return;
+
+		$data = $this->_prep_results($this->user->get($user_details, -1, $want_job_id));
+		$this->load->view('json', $data);
 	}
 
 	function index()
@@ -32,15 +27,21 @@ class Results extends Controller {
 		$this->load->model('User', 'user', TRUE);
 		
 		// authenticate
-		$user_details = $this->_authenticate();
+		$user_details = $this->_authenticate(TRUE);
 		if (!$user_details)
 			return;
 
 		//TODO: set session variable, if necessary
 
 		// show data
-		$data = $this->_prep_results($this->user->get($user_details, 1));
+		$this->user->get($user_details, 1);
+		$data = $this->_prep_results($this->user->get($user_details, 1), -1);
 		$this->load->view('results', $data);
+	}
+	
+	function job($want_job_id)
+	{
+		$this->_force_download_source_file('html', $want_job_id);
 	}
 	
 	// in ./system/application/config/routes.php,
@@ -94,7 +95,7 @@ class Results extends Controller {
 		}
 		
 		// authenticate
-		$user_details = $this->_authenticate();
+		$user_details = $this->_authenticate(TRUE);
 		if (!$user_details)
 			return;
 		
@@ -138,7 +139,7 @@ class Results extends Controller {
 		}
 		
 		// authenticate
-		$user_details = $this->_authenticate();
+		$user_details = $this->_authenticate(TRUE);
 		if (!$user_details)
 			return;
 		
@@ -208,8 +209,9 @@ class Results extends Controller {
 			return;
 		}
 		
-		// public data
-		if ($this->job->count(array('id' => $job, 'public' => 1)))
+		// public/shared data
+		$public_min = $this->config->item('enable_browse_shared') ? 0 : 1;
+		if ($this->job->count(array('id' => $job, 'public >=' => $public_min)))
 		{
 			// force download data
 			$this->_force_download_source_file($what, $job);
@@ -217,7 +219,7 @@ class Results extends Controller {
 		}
 		
 		// otherwise, authenticate
-		$user_details = $this->_authenticate();
+		$user_details = $this->_authenticate(TRUE);
 		if (!$user_details)
 			return;
 		
@@ -242,6 +244,7 @@ class Results extends Controller {
 		// load necessary modules
 		$this->load->model('Job', 'job', TRUE);
 		$this->load->model('User', 'user', TRUE);
+		$this->config->load('trait-o-matic');
 		
 		$username = $this->uri->rsegment(3);
 		if ($username === FALSE)
@@ -251,7 +254,8 @@ class Results extends Controller {
 		$user = $this->user->get(array('username' => $username), 1);
 		// we check to make sure that at least one released job exists;
 		// the function _prep_results does not do this check
-		if (!$user || !$this->job->count(array('user' => $user['id'], 'public' => 1)))
+		$public_min = $this->config->item('enable_browse_shared') ? 0 : 1;
+		if (!$user || !$this->job->count(array('user' => $user['id'], 'public >=' => $public_min)))
 			return;
 		
 		// make sure to show only publicly released results
@@ -263,7 +267,7 @@ class Results extends Controller {
 	// it displays the login page, sets the proper redirect
 	// and returns FALSE when authentication fails; otherwise
 	// it returns an associative array of user details
-	function _authenticate()
+	function _authenticate($mandatory=TRUE)
 	{
 		if ($this->input->post('username') !== FALSE)
 		{
@@ -276,6 +280,7 @@ class Results extends Controller {
 			// error checking
 			if (!$user_details['username'])
 			{
+				if (!$mandatory) return FALSE;
 				$data['error'] = '<strong>Name</strong> is required.';
 				$data['redirect'] = $this->uri->uri_string();
 				$this->load->view('login', $data);
@@ -283,6 +288,7 @@ class Results extends Controller {
 			}
 			if (!$this->user->count($user_details))
 			{
+				if (!$mandatory) return FALSE;
 				$data['error'] = 'Incorrect name or password.';
 				$data['redirect'] = $this->uri->uri_string();
 				$this->load->view('login', $data);
@@ -305,6 +311,7 @@ class Results extends Controller {
 			);
 			if (!$this->user->count($user_details))
 			{
+				if (!$mandatory) return FALSE;
 				$data['error'] = 'Incorrect name or password.';
 				$data['redirect'] = $this->uri->uri_string();
 				$this->load->view('login', $data);
@@ -313,6 +320,7 @@ class Results extends Controller {
 		}
 		else
 		{
+			if (!$mandatory) return FALSE;
 			$data['redirect'] = $this->uri->uri_string();
 			$this->load->view('login', $data);
 			return FALSE;
@@ -334,22 +342,38 @@ class Results extends Controller {
 		$this->load->helper('warehouse');
 		$this->config->load('trait-o-matic');
 
-		if ($what == "json")
+		if ($what == "json" || $what == "html")
 		{
-			if (!$this->config->item('enable_download_json'))
+			if ($what == "json" &&
+			    !$this->config->item('enable_download_json'))
 				return;
 			$job = $this->job->get(array('id' => $job),1);
 			$user = $this->user->get(array('id' => $job['user']),1);
-			$auth_user = $this->_authenticate();
-			$data = $this->_prep_results ($user, !$auth_user || $auth_user['id'] != $user['id']);
-			$filename = $user['username'];
-			if ($job['processed'])
-				$filename .= " ".$job['processed'];
-			$filename .= ".json";
-			header ("Content-type: text/json");
-			header ("Content-disposition: attachment; filename=\"{$filename}\"");
-			print json_encode ($data);
-			exit;
+			if (!$user)
+				return;
+			$auth_user = $this->_authenticate(FALSE);
+			$public_min = 1;
+			if ($this->config->item ('enable_browse_shared'))
+				$public_min = 0;
+			if ($auth_user && $auth_user['id'] == $user['id'])
+				$public_min = -1;
+			$data = $this->_prep_results ($user, $public_min, $job['id']);
+			if (!$data)
+				return;
+			if ($what == "json") {
+				$filename = $user['username'];
+				if ($job['processed'])
+					$filename .= " ".$job['processed'];
+				$filename .= ".json";
+				header ("Content-type: text/json");
+				header ("Content-disposition: attachment; filename=\"{$filename}\"");
+				print json_encode ($data);
+			}
+			else
+			{
+				$this->load->view ('results', $data);
+			}
+			return;
 		}
 		
 		// grab the appropriate file
@@ -397,7 +421,7 @@ class Results extends Controller {
 	
 	// note that invoking this function incorrectly may permit bypassing
 	// password restrictions
-	function _prep_results($user, $public_only=FALSE)
+	function _prep_results($user, $public_min=-1, $want_job_id=FALSE)
 	{
 		// load necessary modules
 		$this->load->model('File', 'file', TRUE);
@@ -414,14 +438,15 @@ class Results extends Controller {
 		// load the user name into our output data
 		$data['username'] = $user['username'];
 		// ...and remember whether it's being accessed as a public view or sample
-		$data['public'] = $public_only;
+		$data['public'] = $public_min >= 0;
 		
 		// retrieve most recent job
-		if ($public_only)
-			$jobs = $this->job->get(array('user' => $user['id'], 'public' => 1));
-		else
-			$jobs = $this->job->get(array('user' => $user['id']));
+		$where = array('user' => $user['id'], 'public >=' => $public_min);
+		if ($want_job_id) $where['id'] = 0 + $want_job_id;
+		$jobs = $this->job->get($where);
 		$most_recent_job = end($jobs);
+		if (!$most_recent_job)
+			return;
 		
 		// update retrieval timestamp on the most recent job
 		$debug_most_recent_job_id = $most_recent_job['id'];
@@ -434,7 +459,7 @@ class Results extends Controller {
 		
 		// read user-submitted phenotypes and append to data
 		$phenotype_file = $this->file->get(array('kind' => 'phenotype', 'job' => $most_recent_job['id']), 1);
-		$phenotype_path = $phenotype_file['path'];
+		$phenotype_path = $phenotype_file ? $phenotype_file['path'] : "";
 		$data['phenotypes'] = get_object_vars(json_decode(warehouse_fetch($phenotype_path)));
 		//TODO: error out if no file is found
 		
@@ -558,6 +583,8 @@ class Results extends Controller {
 		$this->load->library('xmlrpc');
 		$this->load->helper('json');
 		$genotype_file = $this->file->get(array('kind' => 'genotype', 'job' => $job_id), 1);
+		if (!$genotype_file)
+			return array("status" => "error", "error" => "No source data");
 		//TODO: move server address into a config file
 		$this->xmlrpc->server('http://localhost/', 8080);
 		$this->xmlrpc->method('get_progress');

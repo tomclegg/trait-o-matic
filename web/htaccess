@@ -6,3 +6,17 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)$ index.php/$1 [L]
 </IfModule>
+
+AuthType basic
+AuthUserFile %WWW%/.htpasswd
+AuthName .
+
+<FilesMatch .*authenticate.*>
+  # require http authentication
+  Require valid-user
+</FilesMatch>
+
+<FilesMatch .*unauthenticate.*>
+  AuthUserFile /dev/null
+  Require thisuserdoesnotexist
+</FilesMatch>

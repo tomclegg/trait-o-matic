@@ -51,10 +51,10 @@ cd textile-$TEXTILE_VERSION
 cp classTextile.php $WWW/system/application/libraries/Textile.php
 
 cd $SOURCE/web
-tar cf - errors media scripts statistics system/application htaccess | tar -C $WWW -xf -
+tar cf - errors media scripts statistics system/application htaccess authenticate unauthenticate | tar -C $WWW -xf -
 
 cd $WWW
-mv htaccess .htaccess
+perl -p -e 's/%([A-Z]+)%/$ENV{$1}/g' <htaccess >.htaccess
 
 perl -pi~ - system/application/views/*.php <<'EOF'
 BEGIN {

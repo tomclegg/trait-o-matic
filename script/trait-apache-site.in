@@ -12,7 +12,7 @@ NameVirtualHost *:%PORT%
 	</Directory>
 	<Directory %WWW%/>
 		Options Indexes FollowSymLinks MultiViews
-		AllowOverride FileInfo
+		AllowOverride FileInfo AuthConfig
 		Order allow,deny
 		allow from all
 	</Directory>

@@ -192,7 +192,7 @@ def main():
 		output_dir = os.path.dirname(genotype_file) + "-out"
 		lockfile = os.path.join(output_dir,'lock')
 		# remove the lockfile if it is stale
-		subprocess.call('flock --nonblock --exclusive %(lock)s rm -f %(lock)s || true'
+		subprocess.call('flock --nonblock --exclusive %(lock)s rm -f %(lock)s 2>/dev/null || true'
 				% { "lock": lockfile }, shell=True)
 		if os.path.exists(lockfile):
 			return { "state": "processing" }

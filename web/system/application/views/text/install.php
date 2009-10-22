@@ -49,3 +49,7 @@ Finally, start the Trait-o-matic core XMLRPC server.
 <pre>
 sudo /etc/init.d/trait-o-matic start
 </pre>
+
+*Optional:* Set up an .htpasswd file with a username and password.  This allows users to log in at <code>http://your.T-o-m.host/authenticate</code> to make admin features appear (such as browsing other T-o-m data sets on your cluster -- look in <code>/home/trait/config/trait-o-matic.php</code> for more).
+
+bc. sudo -u www-data htpasswd -b -c /home/trait/www/.htpasswd foouser b@rpassw0rd

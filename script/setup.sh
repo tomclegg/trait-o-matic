@@ -6,7 +6,7 @@ set -e
 
 # Update php.ini
 cp /etc/php5/apache2/php.ini /tmp
-./update-php-init php-ini-update.txt /tmp/php.ini
+$SCRIPT_DIR/update-php-init php-ini-update.txt /tmp/php.ini
 sudo cp /tmp/php.ini /etc/php5/apache2/php.ini
 
 # Create dirs
@@ -14,7 +14,7 @@ sudo -u "$USER" mkdir -p $TMP $UPLOAD $LOG
 if [ "$USER" != www-data ]; then sudo -u "$USER" chmod a+rwxt $TMP $UPLOAD; fi
 
 # Apache config
-perl -p -e 's/%([A-Z]+)%/$ENV{$1}/g' < trait-apache-site.in > /tmp/trait-apache-site
+perl -p -e 's/%([A-Z]+)%/$ENV{$1}/g' < $SCRIPT_DIR/trait-apache-site.in > /tmp/trait-apache-site
 sudo cp -f /tmp/trait-apache-site /etc/apache2/sites-available/trait-o-matic
 sudo a2enmod expires
 sudo a2enmod deflate

@@ -4,7 +4,8 @@ h2. Installing from source
 
 To install the latest version of Trait-o-matic, issue the following commands.  _(This procedure was tested on Debian/GNU Linux version "lenny" and should work equally well on Ubuntu version "hardy" or later versions.)_
 
-bc. (set -e
+bc. (
+set -e
 cd
 chmod a+x ~
 sudo apt-get update
@@ -53,3 +54,5 @@ sudo /etc/init.d/trait-o-matic start
 *Optional:* Set up an .htpasswd file with a username and password.  This allows users to log in at <code>http://your.T-o-m.host/authenticate</code> to make admin features appear (such as browsing other T-o-m data sets on your cluster -- look in <code>/home/trait/config/trait-o-matic.php</code> for more).
 
 bc. sudo -u www-data htpasswd -b -c /home/trait/www/.htpasswd foouser b@rpassw0rd
+
+Stay current by "upgrading to the latest version":upgrade periodically.

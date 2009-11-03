@@ -142,6 +142,7 @@ def main():
 		         'E': os.path.join(script_dir, "gff_hgmd_map.py"),
 		         'F': os.path.join(script_dir, "gff_morbid_map.py"),
 		         'G': os.path.join(script_dir, "gff_snpedia_map.py"),
+		         'gff2json_bin': os.path.join(script_dir, "gff2json.py"),
 		         'pharmgkb_bin': os.path.join(script_dir, "gff_pharmgkb_map.py"),
 		         'H': os.path.join(script_dir, "json_allele_frequency_query.py"),
 		         'I': os.path.join(script_dir, "json_to_job_database.py"),
@@ -158,7 +159,8 @@ def main():
 		         '5': os.path.join(output_dir, "hgmd.json"),
 		         '6': os.path.join(output_dir, "morbid.json"),
 		         '7': os.path.join(output_dir, "snpedia.json"),
-		         'pharmgkb_out': os.path.join(output_dir, "pharmgkb.json"),
+		         'ns_json': os.path.join(output_dir, "ns.json"),
+		         'pharmgkb_json': os.path.join(output_dir, "pharmgkb.json"),
 		         '8': "",
 		         '0': os.path.join(output_dir, "README"),
 			 'lockfile': os.path.join(output_dir, "lock")}
@@ -172,15 +174,17 @@ def main():
 		python '%(E)s' '%(3)s' > '%(5)s'
 		python '%(F)s' '%(3)s' > '%(6)s'
 		python '%(G)s' '%(2)s' > '%(7)s'
-		python '%(pharmgkb_bin)s' '%(3)s' > '%(pharmgkb_out)s'
-		python '%(H)s' '%(4)s' '%(5)s' '%(6)s' '%(7)s' '%(pharmgkb_out)s' --in-place
-		python '%(I)s' --drop-tables '%(4)s' '%(5)s' '%(6)s' '%(7)s' '%(pharmgkb_out)s'
+		python '%(gff2json_bin)s' '%(3)s' > '%(ns_json)s'
+		python '%(pharmgkb_bin)s' '%(3)s' > '%(pharmgkb_json)s'
+		python '%(H)s' '%(4)s' '%(5)s' '%(6)s' '%(7)s' '%(pharmgkb_json)s' --in-place
+		python '%(I)s' --drop-tables '%(4)s' '%(5)s' '%(6)s' '%(7)s' '%(pharmgkb_json)s' '%(ns_json)s'
 		touch '%(0)s'
 		python '%(Z)s' -t '%(url)s' '%(4)s' 'out/omim' '%(token)s'
 		python '%(Z)s' -t '%(url)s' '%(5)s' 'out/hgmd' '%(token)s'
 		python '%(Z)s' -t '%(url)s' '%(6)s' 'out/morbid' '%(token)s'
 		python '%(Z)s' -t '%(url)s' '%(7)s' 'out/snpedia' '%(token)s'
-		python '%(Z)s' -t '%(url)s' '%(pharmgkb_out)s' 'out/pharmgkb' '%(token)s'
+		python '%(Z)s' -t '%(url)s' '%(pharmgkb_json)s' 'out/pharmgkb' '%(token)s'
+		python '%(Z)s' -t '%(url)s' '%(ns_json)s' 'out/ns' '%(token)s'
 		python '%(Z)s' -t '%(url)s' '%(0)s' 'out/readme' '%(token)s'
 		rm -f %(lockfile)s
 		) 2>>%(lockfile)s &''' % args

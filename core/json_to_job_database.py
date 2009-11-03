@@ -17,16 +17,18 @@ from utils import doc_optparse
 from utils.biopython_utils import reverse_complement
 from config import DB_HOST, GENOTYPE_USER, GENOTYPE_PASSWD, GENOTYPE_DATABASE
 
+query_delete_job = "DELETE FROM `%(table)s` WHERE `module`='%(module)s'"
+query_delete_allsnps = "DELETE FROM `allsnps` WHERE `job`='%(job)s' AND `module`='%(module)s'"
 query_drop = "DROP TABLE IF EXISTS `%(table)s`"
 query_create = '''
 CREATE TABLE IF NOT EXISTS `%(table)s` (
-  `chromosome` varchar(12) NOT NULL,
+  `chromosome` varchar(13) NOT NULL,
   `coordinates` int(10) unsigned NOT NULL,
   `module` varchar(15) NOT NULL,
-  `genotype` varchar(3) default NULL,
+  `genotype` varchar(7) default NULL,
   `ref_allele` char(1) default NULL,
   `trait_allele` varchar(64) default NULL,
-  `gene` varchar(12) default NULL,
+  `gene` varchar(24) default NULL,
   `amino_acid_change` varchar(96) default NULL,
   `zygosity` enum('hom','het') default NULL,
   `variant` text,
@@ -34,12 +36,12 @@ CREATE TABLE IF NOT EXISTS `%(table)s` (
   `reference` text NOT NULL,
   `taf` varchar(255) default NULL,
   `maf` varchar(255) default NULL,
-  PRIMARY KEY  (`module`,`chromosome`(5),`coordinates`,`gene`,`amino_acid_change`(32),`phenotype`(128),`reference`(128))
+  PRIMARY KEY (`module`,`chromosome`(5),`coordinates`,`gene`,`amino_acid_change`(32),`phenotype`(112),`reference`(112))
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8
 '''
 
-query = '''
-set chromosome=%(chromosome)s, coordinates=%(coordinates)s, module=%(module)s, genotype=%(genotype)s, ref_allele=%(ref_allele)s, trait_allele=%(trait_allele)s, gene=%(gene)s, amino_acid_change=%(amino_acid_change)s, zygosity=%(zygosity)s, variant=%(variant)s, phenotype=%(phenotype)s, reference=%(reference)s, taf=%(taf)s, maf=%(maf)s;
+fieldformat = '''
+chromosome=%(chromosome)s, coordinates=%(coordinates)s, module=%(module)s, genotype=%(genotype)s, ref_allele=%(ref_allele)s, trait_allele=%(trait_allele)s, gene=%(gene)s, amino_acid_change=%(amino_acid_change)s, zygosity=%(zygosity)s, variant=%(variant)s, phenotype=%(phenotype)s, reference=%(reference)s, taf=%(taf)s, maf=%(maf)s
 '''
 
 def main():
@@ -58,6 +60,10 @@ def main():
 		sys.exit()
 
 	warnings.filterwarnings("ignore", "Table '.*' already exists")
+
+	create_all = re.sub ("`chromosome` var", "`job` varchar(64) NOT NULL, `chromosome` var", query_create)
+	create_all = re.sub ("`module`,", "`job`(32), `module`,", create_all)
+	cursor.execute(create_all % { "table": "allsnps" })
 
 	table_name_re = re.compile("^[0-9a-f]{32}[0-9a-f]{32}?(-out)?$");
 	last_table_name = None
@@ -93,14 +99,20 @@ def main():
 			if table_name != last_table_name and option.drop_tables:
 				cursor.execute(query_drop % { "table": table_name })
 			cursor.execute(query_create % { "table": table_name })
+			cursor.execute(query_delete_job % { "table": table_name,
+							    "module": module_name })
+			cursor.execute(query_delete_allsnps % { "job": table_name,
+								"module": module_name })
 			last_filename = fileinput.filename()
 			last_table_name = table_name
 
 		l['taf'] = json.dumps(l['taf'])
 		l['maf'] = json.dumps(l['maf'])
 		l['module'] = module_name
+		l['job'] = table_name
 
-		cursor.execute("replace into `" + table_name + "` " + query, l);
+		cursor.execute("replace into `" + table_name + "` set " + fieldformat + ";", l);
+		cursor.execute("insert ignore into `allsnps` set job=%(job)s, " + fieldformat + ";", l);
 
 	# close database cursor and connection
 	cursor.close()

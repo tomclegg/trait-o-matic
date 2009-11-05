@@ -119,7 +119,8 @@ fi
 sed 's/ (None)//' < snpedia.txt \
  | awk 'BEGIN { FS = "\t" }; ($5 !~ /(^normal)|(^\?)/ || $5 ~ /;/)' \
  > snpedia.filtered.txt
-python $CORE/snpedia_print_genotypes.py snpedia.filtered.txt > snpedia.tsv
+python $CORE/snpedia_print_genotypes.py snpedia.filtered.txt > snpedia.tsv.tmp
+mv snpedia.tsv.tmp snpedia.tsv
 
 echo Loading morbidmap, omim, refFlat, snpedia, dbSNP data into MySQL
 if [ ! -f load.stamp ]; then
@@ -165,6 +166,7 @@ then
     cd $DATA
     sudo chown mysql:mysql snp129.MYD snp129.MYI snp129.frm
     sudo mv snp129.MYD snp129.MYI snp129.frm /var/lib/mysql/caliban/
+    sudo /etc/init.d/mysql restart
     )
 ***
 EOF
@@ -181,6 +183,7 @@ then
     cd $DATA
     sudo chown mysql:mysql hapmap27.*
     sudo mv hapmap27.* /var/lib/mysql/caliban/
+    sudo /etc/init.d/mysql restart
     )
 ***
 EOF

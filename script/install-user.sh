@@ -47,6 +47,6 @@ cat >&2 <<EOF
 *** interface at http://`hostname`/.
 ***
 *** You still need to obtain and import the reference data before any
-*** processing can occur.  See http://`hostname`/docs/.
+*** processing can occur.  See http://`hostname`/docs/install
 ***
 EOF

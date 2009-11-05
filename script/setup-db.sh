@@ -23,5 +23,5 @@ cat >&2 <<EOF
 *** When prompted, please enter your MySQL root password.
 ***
 EOF
-cat setup.sql | sed -e "s/shakespeare/$dbpass/g" | mysql -uroot -p
+cat $SCRIPT_DIR/setup.sql | sed -e "s/shakespeare/$dbpass/g" | mysql -uroot -p
 touch $DATA/mysql.stamp

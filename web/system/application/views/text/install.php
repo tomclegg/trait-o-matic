@@ -43,7 +43,9 @@ echo '$Warehouse::warehouses=[{name=>"templeton",configurl=>
 
 Populate the databases with reference data.  _(Note: This takes about 30 minutes if you're downloading the data from the local cluster, or 2-3 hours if you're downloading everything on a fast internet link.)_
 
-bc. sudo -u www-data USER=www-data HOME=/home/trait IMPORT_BINARY=1 ~/trait-o-matic/setup-external-data.sh
+bc. sudo -u www-data USER=www-data HOME=/home/trait IMPORT_BINARY=1 ~/trait-o-matic/script/setup-external-data.sh
+
+If you are downloading data from the local cluster, you may be prompted to enter some commands to finish importing the data into the database and restart the MySQL server.
 
 Finally, start the Trait-o-matic core XMLRPC server.
 

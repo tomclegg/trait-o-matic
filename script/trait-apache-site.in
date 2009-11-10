@@ -30,4 +30,15 @@ NameVirtualHost *:%PORT%
 
 	CustomLog %HOME%/log/access.log combined
 	ServerSignature On
+
+	Alias /trait-o-matic.git %SOURCE%/.git
+        <Location /trait-o-matic.git>
+		Dav On
+		AuthName git
+		AuthType Basic
+		AuthUserFile %SOURCE%/.gitpasswd
+		<LimitExcept GET HEAD PROPFIND>
+			Require valid-user
+		</LimitExcept>
+        </Location>
 </VirtualHost>

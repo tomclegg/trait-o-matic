@@ -20,8 +20,7 @@ if [ ! -e ./script/config-local.sh ]
 then
   USER=www-data HOME=/home/trait BASE_URL=http://yourhost.example.com/ ./script/configure.sh
 fi
-./script/install-root.sh
-./script/install-user.sh
+./script/install.sh
 ./script/check.sh
 sudo /etc/init.d/trait-o-matic restart
 echo Done.

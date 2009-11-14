@@ -15,12 +15,10 @@ cd trait-o-matic/script
 sudo mkdir /home/trait
 sudo chown www-data:www-data /home/trait
 USER=www-data HOME=/home/trait BASE_URL=http://yourhost.example.com/ ./configure.sh
-./install-root.sh
-#
-# Note prompt to set up a mysql root password during mysql-server install
-#
-./install-user.sh
+./install.sh
 )
+
+You will be prompted to set up a mysql root password if you hadn't already installed mysql-server.  Other than that, everything should happen without further input.
 
 Check the configuration (this should not output any warnings):
 

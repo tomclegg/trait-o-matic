@@ -22,8 +22,7 @@ php5 \
 php5-dev \
 php5-mysql \
 python-biopython \
---fix-missing
-
+--fix-missing || \
 cat >&2 <<EOF
 ***
 *** If apt-get python-biopython failed, ensure that you have

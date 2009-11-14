@@ -22,6 +22,8 @@ Consider adding it.
 EOF
 fi
 
+chmod +x $SOURCE/.git/hooks/post-update
+
 if ! grep -qx 'git update-server-info' $SOURCE/.git/hooks/post-commit
 then
   echo >&2 "Adding 'git update-server-info' to git post-commit hooks."

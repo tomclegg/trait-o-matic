@@ -2,6 +2,8 @@
 
 set -e
 
+. "$(echo "$0" | sed -e 's/[^\/]*$//')defaults.sh"
+
 if [ `tr -dc . </etc/hostname |wc -c` -lt 2 ]
 then
   cat >&2 <<EOF
@@ -20,3 +22,9 @@ Consider adding it.
 EOF
 fi
 
+if ! grep -qx 'git update-server-info' $SOURCE/.git/hooks/post-commit
+then
+  echo >&2 "Adding 'git update-server-info' to git post-commit hooks."
+  chmod +x $SOURCE/.git/hooks/post-commit
+  echo git update-server-info | tee -a $SOURCE/.git/hooks/post-commit
+fi

@@ -2,7 +2,7 @@ Complete source code for Trait-o-matic is now available in the repository but la
 
 h2. Installing from source
 
-To install the latest version of Trait-o-matic, issue the following commands.  _(This procedure was tested on Debian/GNU Linux version "lenny" and should work equally well on Ubuntu version "hardy" or later versions.)_
+To install the latest version of Trait-o-matic, issue the following commands.  Replace http://yourhost.example.com/ with the appropriate URL for your site.   _(This procedure was tested on Debian/GNU Linux version "lenny" and should work equally well on Ubuntu version "hardy" or later versions.)_
 
 bc. (
 set -e
@@ -14,11 +14,12 @@ git clone git://github.com/tomclegg/trait-o-matic.git
 cd trait-o-matic/script
 sudo mkdir /home/trait
 sudo chown www-data:www-data /home/trait
-USER=www-data HOME=/home/trait PORT=80 ./install-root.sh
+USER=www-data HOME=/home/trait BASE_URL=http://yourhost.example.com/ ./configure.sh
+./install-root.sh
 #
 # Note prompt to set up a mysql root password during mysql-server install
 #
-sudo -u www-data USER=www-data HOME=/home/trait ./install-user.sh
+./install-user.sh
 )
 
 Check the configuration (this should not output any warnings):
@@ -52,6 +53,10 @@ Finally, start the Trait-o-matic core XMLRPC server.
 <pre>
 sudo /etc/init.d/trait-o-matic start
 </pre>
+
+*Optional:* Register your installation and git repository so (if you leave it publicly accessible) other developers can see what you commit to your repository.  It's also a good idea to describe what you're working on at "the Trait-o-matic home page":https://trac.scalablecomputingexperts.com/wiki/Doc/Trait-o-matic.
+
+bc. ~/trait-o-matic/script/clonetrack-update.sh
 
 *Optional:* Set up an .htpasswd file with a username and password.  This allows users to log in at <code>http://your.T-o-m.host/authenticate</code> to make admin features appear (such as browsing other T-o-m data sets on your cluster -- look in <code>/home/trait/config/trait-o-matic.php</code> for more).
 

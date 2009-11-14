@@ -92,6 +92,11 @@ do
   # Put the latest defaults in $CONFIG
   cp -p $WWW/system/application/config/$conf.default.php $CONFIG/
 
+  if [ ! -z "$BASE_URL" ]
+  then
+    perl -pi~ -e 's,http://\$_SERVER\[HTTP_HOST\]/,$ENV{BASE_URL},' $CONFIG/$conf.default.php
+  fi
+
   if [ ! -e $CONFIG/$conf.php -a ! -L $CONFIG/$conf.php ]
   then
     dbpass=$(cat $CONFIG/dbpassword)

@@ -19,7 +19,6 @@ sudo cp -f /tmp/trait-apache-site /etc/apache2/sites-available/trait-o-matic
 sudo a2enmod expires
 sudo a2enmod deflate
 sudo a2enmod rewrite
-sudo a2enmod dav_fs
 sudo a2ensite trait-o-matic
 sudo a2dissite default
 sudo /etc/init.d/apache2 restart

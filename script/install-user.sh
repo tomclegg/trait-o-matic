@@ -1,7 +1,14 @@
 #!/bin/bash
 
 set -e
+
 . "$(echo "$0" | sed -e 's/[^\/]*$//')defaults.sh"
+
+if [ "`id -u $USER`" != "$EUID" ]
+then
+  set -x
+  exec sudo -u "$USER" "$0"
+fi
 
 mkdir -p $WWW
 mkdir -p $CONFIG

@@ -16,9 +16,13 @@ bc. (
 set -e
 chmod a+x ~
 cd ~/trait-o-matic
-USER=www-data HOME=/home/trait PORT=80 ./script/install-root.sh
-sudo -u www-data USER=www-data HOME=/home/trait ./script/install-user.sh
-~/trait-o-matic/script/check.sh
+if [ ! -e ./script/config-local.sh ]
+then
+  USER=www-data HOME=/home/trait BASE_URL=http://yourhost.example.com/ ./script/configure.sh
+fi
+./script/install-root.sh
+./script/install-user.sh
+./script/check.sh
 sudo /etc/init.d/trait-o-matic restart
 echo Done.
 )

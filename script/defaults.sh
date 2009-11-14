@@ -1,5 +1,20 @@
 export SCRIPT_DIR="$(echo "$0" | sed -e 's/[^\/]*$//')"
 SCRIPT_DIR=$(if [ ! -z "$SCRIPT_DIR" ]; then cd "$SCRIPT_DIR"; fi; pwd)
+
+if [ ! -e $SCRIPT_DIR/config-local.sh ]
+then
+  cat >&2 <<EOF
+***
+You need to run $SCRIPT_DIR/configure.sh
+before running this script.  See http://snp-dev2.freelogy.org/docs/install
+or http://snp-dev2.freelogy.org/docs/upgrade
+***
+EOF
+  exit 1
+fi
+
+. $SCRIPT_DIR/config-local.sh
+
 if [ -z "$CORE" ]; then export CORE=$HOME/core; fi
 if [ -z "$WWW" ]; then export WWW=$HOME/www; fi
 if [ -z "$CONFIG" ]; then export CONFIG=$HOME/config; fi

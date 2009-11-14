@@ -48,7 +48,7 @@ if (!isset($asynchronous) || !$asynchronous):
 				<span class="bullet"> &nbsp;&bull;&nbsp; </span>
 				<span class="link"><a href="/docs/install">How to install</a></span>
 				<span class="bullet"> &nbsp;&bull;&nbsp; </span>
-				<span class="link"><a href="http://github.com/xwu/trait-o-matic/tree">Code Repository</a></span>
+				<span class="link"><a href="/docs/source">Source code</a></span>
 			</p>
 		</div>
 	</div></div>

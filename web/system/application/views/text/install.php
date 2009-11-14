@@ -1,4 +1,4 @@
-Complete source code for Trait-o-matic is now available in the repository but lacks thorough commenting. The following are instructions detailing how code from the repository can be used to install a fully working mirror.
+Complete source code for Trait-o-matic is available from "multiple sources":source. The following instructions can be used to install a fully working mirror.
 
 h2. Installing from source
 

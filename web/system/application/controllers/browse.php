@@ -185,6 +185,7 @@ class Browse extends Controller {
       // apply filters
 
       if (!$lastrow ||
+	  $lastrow->gene != $row->gene ||
 	  $lastrow->chromosome != $row->chromosome ||
 	  $lastrow->coordinates != $row->coordinates)
       {

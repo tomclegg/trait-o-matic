@@ -24,7 +24,11 @@ def main():
 		# lightly parse alleles
 		alleles = record.attributes["alleles"].strip("\"").split("/")
 		ref_allele = record.attributes["ref_allele"].strip("\"")
-		
+
+		# compress identical alleles like "A/A" into just "A"
+		while len(alleles) > 1 and alleles[0].upper() == alleles[1].upper():
+			alleles.pop(0)
+
 		# determine zygosity
 		if len(alleles) == 1:
 			zygosity = "hom"

@@ -27,6 +27,14 @@ class Browse extends Controller {
     }
   }
 
+  function allsnps($filters)
+  {
+    $this->config->load('trait-o-matic');
+    if ($this->config->item('enable_browse_shared')) {
+      $this->_browse_allsnps($filters);
+    }
+  }
+
   function _get_warehouse_list()
   {
     $refresh_command = 'wh manifest list | (fgrep /Trait-o-matic/ || [ "$?" = 1 ]) > /tmp/warehouse-list.tmp && mv /tmp/warehouse-list.tmp /tmp/warehouse-list.cache';
@@ -126,5 +134,100 @@ class Browse extends Controller {
       // $ret[-1] = ereg_replace("\+[^/]*", "", $ret[-1]);
     }
     return $ret;
+  }
+
+  function _browse_allsnps($filters)
+  {
+    $this->load->database();
+
+    $left_join_a2 = "";
+    $and_a2_gene_is_null = "";
+    if (ereg ('noannotation', $filters) && "slow query" == "allowed")
+    {
+      // TODO: make this query execute in a reasonable time
+      $left_join_a2 = "left join genotypes.allsnps a2 on a2.module <> 'ns' and a.chromosome=a2.chromosome and a.coordinates=a2.coordinates";
+      $and_a2_gene_is_null = "and a2.gene is null";
+    }
+
+    $query = $this->db->query("
+ select
+  a.gene gene,
+  a.amino_acid_change amino_acid_change,
+  a.chromosome chromosome,
+  a.coordinates coordinates,
+  a.variant variant,
+  a.ref_allele ref_allele,
+  a.genotype genotype,
+  a.zygosity zygosity,
+  username
+ from genotypes.allsnps a
+ left join files on kind='out/readme' and path like concat('%/',a.job,'%')
+ left join jobs on jobs.id=files.job and jobs.public >= 0
+ left join users on jobs.user=users.id
+ $left_join_a2
+ where a.module = 'ns'
+   and users.id is not null
+   $and_a2_gene_is_null
+ order by a.gene, a.chromosome, a.coordinates");
+    header("Content-type: text/plain");
+    $outq = "";
+    $skipthis = 0;
+    for ($row = $query->_fetch_object(), $lastrow = 0;
+	 $row;
+	 $lastrow = $row, $row = $query->_fetch_object())
+    {
+      // extract dbsnp id, if any, from "variant" field
+
+      $row->dbsnp_id = "";
+      if (ereg ("dbsnp:(rs[0-9]+)", $row->variant, $regs))
+	$row->dbsnp_id = $regs[1];
+
+      // apply filters
+
+      if (!$lastrow ||
+	  $lastrow->chromosome != $row->chromosome ||
+	  $lastrow->coordinates != $row->coordinates)
+      {
+	// this is the first individual we're seeing with this variant
+	if (!$skipthis) print $outq;
+	$outq = "";
+	$skipthis = 0;
+      }
+      else if ($skipthis)
+      {
+	// we've already decided that this variant is uninteresting
+	continue;
+      }
+      else if (ereg ('unique', $filters))
+      {
+	// we only want unique variants, and this isn't the first
+	// individual with this variant
+	$skipthis = 1;
+	continue;
+      }
+
+      if (ereg ('hom', $filters) && $row->zygosity != 'hom')
+      {
+	continue;
+      }
+      if (ereg ('nodbsnp', $filters) && $row->dbsnp_id)
+      {
+	continue;
+      }
+
+      // add this variant to the output queue
+      $outq .= sprintf ("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+			$row->gene,
+			$row->amino_acid_change,
+			$row->chromosome,
+			$row->coordinates,
+			$row->dbsnp_id,
+			$row->ref_allele,
+			$row->genotype,
+			$row->zygosity,
+			$row->username);
+    }
+    if (!$skipthis)
+      print $outq;
   }
 }

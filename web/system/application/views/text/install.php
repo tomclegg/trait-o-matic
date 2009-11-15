@@ -24,6 +24,10 @@ Check the configuration (this should not output any warnings):
 
 bc. ~/trait-o-matic/script/check.sh
 
+Restart apache (the <code>install.sh</code> script already ran "apache2ctl graceful" which should be enough, but this will do a full stop/start cycle just to be sure.)
+
+bc. sudo /etc/init.d/apache2 restart
+
 If your installation has access to a Free Factories storage system, set up the Free Factories client library now.  If the reference data is available on your cluster, this step will make the following step proceed _much_ faster.
 
 bc. echo "deb http://dev.freelogy.org/apt hardy main contrib non-free" \

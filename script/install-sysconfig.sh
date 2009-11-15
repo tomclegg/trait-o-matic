@@ -21,7 +21,7 @@ a2enmod deflate
 a2enmod rewrite
 a2ensite trait-o-matic
 a2dissite default
-/etc/init.d/apache2 restart
+apache2ctl graceful
 
 # Init script
 perl -p -e 's/%([A-Z]+)%/$ENV{$1}/g' < $SOURCE/script/trait-o-matic.in > /etc/init.d/trait-o-matic.tmp

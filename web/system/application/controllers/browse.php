@@ -149,6 +149,10 @@ class Browse extends Controller {
       $and_a2_gene_is_null = "and a2.gene is null";
     }
 
+    $public_min = 0;
+    if (ereg ('public', $filters))
+      $public_min = 1;
+
     $query = $this->db->query("
  select
   a.gene gene,
@@ -162,7 +166,7 @@ class Browse extends Controller {
   username
  from genotypes.allsnps a
  left join files on kind='out/readme' and path like concat('%/',a.job,'%')
- left join jobs on jobs.id=files.job and jobs.public >= 0
+ left join jobs on jobs.id=files.job and jobs.public >= $public_min
  left join users on jobs.user=users.id
  $left_join_a2
  where a.module = 'ns'

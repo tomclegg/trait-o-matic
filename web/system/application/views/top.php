@@ -14,8 +14,6 @@ header("Pragma: no-cache");
 <html>
 <head>
 	<title>Trait-o-matic</title>
-	<!-- prototype does not yet fully support ie8 -->
-	<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" />
 	<link rel="stylesheet" media="screen" type="text/css" href="/media/styles.css">
 	<link rel="stylesheet" media="screen" type="text/css" href="/media/index.css">
 	<!--[if lte IE 7]><link rel="stylesheet" media="screen" type="text/css" href="/media/styles-ie.css"><![endif]-->
@@ -24,8 +22,8 @@ header("Pragma: no-cache");
 	<link rel="stylesheet" media="only screen and (max-device-width: 480px)" type="text/css" href="/media/styles-iphone.css">
 	<link rel="stylesheet" media="only screen and (max-device-width: 480px)" type="text/css" href="/media/index-iphone.css">
 	<meta name="viewport" content="user-scalable=no,width=device-width">
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.0.3/prototype.js"></script>
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/scriptaculous/1.8.2/effects.js"></script>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.1/prototype.js"></script>
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/scriptaculous/1.8.3/effects.js"></script>
 	<script type="text/javascript" src="/scripts/glider.js"></script>
 	<script type="text/javascript" src="/scripts/index.js"></script>
 	<script type="text/javascript" src="/scripts/genes.js"></script>

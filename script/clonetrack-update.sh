@@ -8,7 +8,7 @@ then
   exit
 fi
 
-origin=$(cat $SOURCE/.git/config | perl -ne '$x=0 if /^\[/; $x=1 if /^\[remote "origin"\]/; if ($x && /url\s*=\s*(\S+)/) { print "$1\n"; exit; }')
+origin=$(cd $SOURCE; git config --get remote.origin.url)
 
 id=$(cat $SCRIPT_DIR/clonetrack.id || true)
 

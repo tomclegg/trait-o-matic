@@ -526,7 +526,10 @@ class Results extends Controller {
 			$path = $file['path'];
 			foreach (preg_split('/[\r\n]+/', read_file($path), -1, PREG_SPLIT_NO_EMPTY) as $line)
 			{
-				$data[] = get_object_vars(json_decode($line));
+				if (substr ($line, 0, 1) == "{")
+				{
+					$data[] = get_object_vars(json_decode($line));
+				}
 			}
 		}
 		// default sort; first obtain list of columns by which to sort

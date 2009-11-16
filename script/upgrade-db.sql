@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS `humans` (
   `location` varchar(128),
   `birthdate` date,
   `ancestry` text,
-  `sex` char(1),
+  `sex` enum('M','F'),
   UNIQUE `global_id` (`global_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 

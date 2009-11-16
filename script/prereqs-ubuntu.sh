@@ -22,6 +22,7 @@ php5 \
 php5-dev \
 php5-mysql \
 python-biopython \
+php5-gd \
 --fix-missing || \
 cat >&2 <<EOF
 ***

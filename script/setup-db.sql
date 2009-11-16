@@ -3,25 +3,22 @@ CREATE DATABASE `ariel` DEFAULT CHARACTER SET ASCII COLLATE ascii_general_ci;
 CREATE DATABASE `caliban` DEFAULT CHARACTER SET ASCII COLLATE ascii_general_ci;
 CREATE DATABASE `dbsnp` DEFAULT CHARACTER SET ascii COLLATE ascii_general_ci;
  
-CREATE USER 'reader'@'localhost' IDENTIFIED BY 'shakespeare';
-GRANT SELECT ON *.* TO `reader`@'localhost';
 CREATE USER 'reader'@'%' IDENTIFIED BY 'shakespeare';
-GRANT SELECT ON *.* TO `reader`@'%';
+GRANT SELECT ON `ariel`.* TO `reader`@'%';
+GRANT SELECT ON `caliban`.* TO `reader`@'%';
  
-CREATE USER 'updater'@'localhost' IDENTIFIED BY 'shakespeare';
-GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, CREATE TEMPORARY TABLES ON *.* TO `updater`@'localhost';
 CREATE USER 'updater'@'%' IDENTIFIED BY 'shakespeare';
-GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, CREATE TEMPORARY TABLES ON *.* TO `updater`@'%';
- 
-CREATE USER 'writer'@'localhost' IDENTIFIED BY 'shakespeare';
-GRANT SELECT, INSERT, UPDATE, CREATE TEMPORARY TABLES ON `ariel`.* TO `writer`@'localhost';
-GRANT SELECT, INSERT, UPDATE, CREATE, CREATE TEMPORARY TABLES ON `genotypes`.* TO `writer`@'localhost';
 CREATE USER 'writer'@'%' IDENTIFIED BY 'shakespeare';
-GRANT SELECT, INSERT, UPDATE, CREATE TEMPORARY TABLES ON `ariel`.* TO `writer`@'%';
-GRANT SELECT, INSERT, UPDATE, CREATE, CREATE TEMPORARY TABLES ON `genotypes`.* TO `writer`@'%';
- 
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, CREATE TEMPORARY TABLES ON `ariel`.* TO `updater`@'%', `writer`@'%';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, CREATE TEMPORARY TABLES ON `caliban`.* TO `updater`@'%', `writer`@'%';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, CREATE TEMPORARY TABLES ON `genotypes`.* TO `updater`@'%', `writer`@'%';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, CREATE TEMPORARY TABLES ON `genotypes`.* TO `updater`@'%', `writer`@'%';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, CREATE TEMPORARY TABLES ON `genotypes`.* TO `updater`@'%', `writer`@'%';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, CREATE TEMPORARY TABLES ON `genotypes`.* TO `updater`@'%', `writer`@'%';
+
 FLUSH PRIVILEGES;
- 
+
+
 USE ariel;
  
 CREATE TABLE IF NOT EXISTS `evidence` (
@@ -194,5 +191,3 @@ ALTER TABLE `b129_SNPChrPosOnRef_36_3` ADD UNIQUE `i_snp_id` (`snp_id`);
 ALTER TABLE `b129_SNPChrPosOnRef_36_3` ADD INDEX `i_chrpos` (`chr`,`pos`);
  
 CREATE OR REPLACE VIEW `SNPChrPosOnRef` AS SELECT * FROM `b129_SNPChrPosOnRef_36_3`;
-
-

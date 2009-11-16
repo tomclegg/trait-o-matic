@@ -100,7 +100,7 @@ if [ ! -f snp129.stamp ]; then
   try_whget  /Trait-o-matic/data/snp129 . || \
   $WGET http://hgdownload.cse.ucsc.edu/goldenPath/hg18/database/snp129.txt.gz
   echo Importing snp129 data into MySQL.
-  $GUNZIP -c snp129.txt.gz | mysql -uupdater -p"$MYSQL_PASS" -e "USE caliban; TRUNCATE snp129; LOAD DATA LOCAL INFILE '/dev/stdin' INTO TABLE snp129 FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';"
+  $GUNZIP -c snp129.txt.gz | mysql -uinstaller -p"$MYSQL_PASS" -e "USE caliban; TRUNCATE snp129; LOAD DATA LOCAL INFILE '/dev/stdin' INTO TABLE snp129 FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';"
   touch snp129.stamp
   rm -f snp129.txt
 fi
@@ -128,7 +128,7 @@ if [ ! -f load.stamp ]; then
   rm -f b129.fifo
   mkfifo b129.fifo
   $GUNZIP < b129_SNPChrPosOnRef_36_3.bcp.gz > b129.fifo &
-  mysql -uupdater -p$MYSQL_PASS < $DATA/load.sql
+  mysql -uinstaller -p$MYSQL_PASS < $DATA/load.sql
   rm -f b129.fifo
   touch load.stamp
 fi

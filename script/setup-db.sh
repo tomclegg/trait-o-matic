@@ -3,25 +3,49 @@
 set -e
 set -o pipefail
 
-if [ -e $DATA/mysql.stamp ]; then
-  exit 0
+pwprompt()
+{
+  cat >&2 <<"  EOF"
+  ***
+  *** When prompted, please enter your MySQL root password.
+  ***
+  EOF
+}
+
+if [ ! -e $DATA/mysql.stamp ]; then
+
+  if [ ! -e $CONFIG/dbpassword ]
+  then
+    (
+      umask 077
+      head -c 2000 /dev/urandom | tr -dc A-Za-z0-9 | head -c 8 > $CONFIG/dbpassword
+    )
+  fi
+
+  dbpass=$(cat $CONFIG/dbpassword)
+  [ $? = 0 ]
+
+  pwprompt
+  cat $SCRIPT_DIR/setup-db-users.sql $SCRIPT_DIR/setup-db-tables.sql | sed -e "s/shakespeare/$dbpass/g" | mysql -uroot -p
+  touch $DATA/mysql.stamp
+else
+  dbpass=$(cat $CONFIG/dbpassword)
+  [ $? = 0 ]
+
+  if ! mysql -uinstaller -p"$dbpass" <<"  EOF" >/dev/null
+  select now()
+  EOF
+  then
+    # no "installer" user -- old install, need to fix mysql permissions
+    pwprompt
+    cat $SCRIPT_DIR/setup-db-users.sql | sed -e "s/shakespeare/$dbpass/g" | mysql -uroot -p -f
+  fi
 fi
 
-if [ ! -e $CONFIG/dbpassword ]
-then
-  (
-    umask 077
-    head -c 2000 /dev/urandom | tr -dc A-Za-z0-9 | head -c 8 > $CONFIG/dbpassword
-  )
-fi
+# upgrade-db.sql adds fields that were not present in some previous
+# versions.  MySQL does not have a feature analogous to "if not
+# exists" for adding columns, so we just use "--force" to "continue
+# even if an SQL error occurs".
 
-dbpass=$(cat $CONFIG/dbpassword)
-[ $? = 0 ]
-
-cat >&2 <<EOF
-***
-*** When prompted, please enter your MySQL root password.
-***
-EOF
-cat $SCRIPT_DIR/setup.sql | sed -e "s/shakespeare/$dbpass/g" | mysql -uroot -p
-touch $DATA/mysql.stamp
+echo >&2 '*** Some "duplicate column name" and "duplicate key name" errors are normal here ***'
+cat $SCRIPT_DIR/upgrade-db.sql | sed -e "s/shakespeare/$dbpass/g" | mysql -uinstaller -p"$dbpass" --force

@@ -549,31 +549,31 @@ class Results extends Controller {
 
 			if (!isset ($row['gene'])) unset($data[$key]['gene']);
 
-					// to have chromosomes sort correctly, we convert X, Y, M (or MT) to numbers
-					$chromosome[$key]  = str_replace('chr', '', $row['chromosome']);
-					switch ($chromosome[$key])
-					{
-					case 'X':
-						$chromosome[$key] = '23';
-						break;
-					case 'Y':
-						$chromosome[$key] = '24';
-						break;
-					case 'M':
-					case 'MT':
-						$chromosome[$key] = '25';
-						break;
-					}
-					// other things to sort by; we include amino acid position despite having genome
-					// coordinates to break ties in case of alternative splicings
-					$coordinates[$key] = $row['coordinates'];
-					$gene[$key] = array_key_exists('gene', $row) ? $row['gene'] : "";
-					$amino_acid_position[$key] = array_key_exists('amino_acid_change', $row) ?
-					                               preg_replace('/\\D/', '', $row['amino_acid_change']) : "";
-					$phenotype[$key] = $row['phenotype'];
+			// to have chromosomes sort correctly, we convert X, Y, M (or MT) to numbers
+			$chromosome[$key]  = str_replace('chr', '', $row['chromosome']);
+			switch ($chromosome[$key])
+				{
+				case 'X':
+					$chromosome[$key] = '23';
+					break;
+				case 'Y':
+					$chromosome[$key] = '24';
+					break;
+				case 'M':
+				case 'MT':
+					$chromosome[$key] = '25';
+					break;
 				}
-				@array_multisort($chromosome, SORT_NUMERIC, $coordinates, SORT_NUMERIC,
-				                 $gene, $amino_acid_position, SORT_NUMERIC, $phenotype, $data);
+			// other things to sort by; we include amino acid position despite having genome
+			// coordinates to break ties in case of alternative splicings
+			$coordinates[$key] = $row['coordinates'];
+			$gene[$key] = array_key_exists('gene', $row) ? $row['gene'] : "";
+			$amino_acid_position[$key] = array_key_exists('amino_acid_change', $row) ?
+				preg_replace('/\\D/', '', $row['amino_acid_change']) : "";
+			$phenotype[$key] = $row['phenotype'];
+		}
+		@array_multisort($chromosome, SORT_NUMERIC, $coordinates, SORT_NUMERIC,
+				 $gene, $amino_acid_position, SORT_NUMERIC, $phenotype, $data);
 		return $data;
 	}
 

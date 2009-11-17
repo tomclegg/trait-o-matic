@@ -15,3 +15,7 @@ do
     echo git update-server-info | tee -a $SOURCE/.git/hooks/$hook >/dev/null
   fi
 done
+
+set -e
+cd $SOURCE
+git update-server-info

@@ -8,11 +8,6 @@ CREATE DATABASE `dbsnp` DEFAULT CHARACTER SET ascii COLLATE ascii_general_ci;
 CREATE DATABASE `hgmd_pro` DEFAULT CHARACTER SET ascii COLLATE ascii_general_ci;
 CREATE DATABASE `pharmgkb` DEFAULT CHARACTER SET ascii COLLATE ascii_general_ci;
 
-DROP USER 'reader'@'%';
-DROP USER 'writer'@'%';
-DROP USER 'updater'@'%';
-DROP USER 'installer'@'%';
-
 REVOKE ALL PRIVILEGES, GRANT OPTION FROM `reader`@`localhost`, `writer`@`localhost`, `updater`@`localhost`, `installer`@`localhost`;
 
 -- "reader" is the back-end user when it needs to look up variants in

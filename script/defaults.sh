@@ -1,3 +1,8 @@
+if [ -n "$DEBUG" ]
+then
+  set -x
+fi
+
 export SCRIPT_DIR="$(echo "$0" | sed -e 's/[^\/]*$//')"
 SCRIPT_DIR=$(if [ ! -z "$SCRIPT_DIR" ]; then cd "$SCRIPT_DIR"; fi; pwd)
 

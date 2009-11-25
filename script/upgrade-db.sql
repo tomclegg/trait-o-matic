@@ -1,11 +1,6 @@
 -- this should be run with "mysql --force" to ignore "column already
 -- exists" errors.
 
-DROP USER 'reader'@'%';
-DROP USER 'writer'@'%';
-DROP USER 'updater'@'%';
-DROP USER 'installer'@'%';
-
 use ariel;
 
 CREATE TABLE IF NOT EXISTS `humans` (

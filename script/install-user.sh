@@ -7,7 +7,7 @@ set -e
 if [ "`id -u $USER`" != "$EUID" ]
 then
   set -x
-  exec sudo -u "$USER" "$0"
+  exec sudo -u "$USER" DEBUG="$DEBUG" "$0"
 fi
 
 mkdir -p $WWW

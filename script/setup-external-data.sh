@@ -14,6 +14,10 @@ cp $SCRIPT_DIR/load.sql $DATA/load.sql
 
 try_whget ()
 {
+  if ! which wh >/dev/null
+  then
+    return 1
+  fi
   manifest_name="$1"
   dest_dir="$2"
   manifest_hash=$(wh manifest lookup name="$manifest_name")
@@ -30,7 +34,7 @@ try_whget ()
 }
 
 # Use "continue" flag on wget, so that we can just rerun this script and it will do the right thing
-WGET='wget -c -nv'
+WGET='wget -c --progress=bar'
 GUNZIP='gunzip -f'
 MYSQL_PASS=$(cat $CONFIG/dbpassword)
 

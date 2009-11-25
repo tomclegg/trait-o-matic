@@ -22,14 +22,14 @@ if [ ! -e $DATA/mysql.stamp ]; then
     )
   fi
 
-  dbpass=$(cat $CONFIG/dbpassword)
+  export dbpass=$(cat $CONFIG/dbpassword)
   [ $? = 0 ]
 
   pwprompt
   cat $SCRIPT_DIR/setup-db-users.sql $SCRIPT_DIR/setup-db-tables.sql | sed -e "s/shakespeare/$dbpass/g" | mysql -uroot -p
   touch $DATA/mysql.stamp
 else
-  dbpass=$(cat $CONFIG/dbpassword)
+  export dbpass=$(cat $CONFIG/dbpassword)
   [ $? = 0 ]
 
   if ! mysql -uinstaller -p"$dbpass" <<"  EOF" >/dev/null
@@ -38,9 +38,11 @@ else
   then
     # no "installer" user -- old install, need to fix mysql permissions
     pwprompt
-    cat $SCRIPT_DIR/setup-db-users.sql | sed -e "s/shakespeare/$dbpass/g" | mysql -uroot -p -f
+    cat $SCRIPT_DIR/setup-db-users.sql | sed -e 's/shakespeare/$ENV{"dbpass"}/g' | mysql -uroot -p -f
   fi
 fi
+
+cat $SCRIPT_DIR/setup-db-permissions.sql | sed -e 's/shakespeare/$ENV{"dbpass"}/g' | mysql -uinstaller -p"$dbpass"
 
 # upgrade-db.sql adds fields that were not present in some previous
 # versions.  MySQL does not have a feature analogous to "if not
@@ -48,4 +50,4 @@ fi
 # even if an SQL error occurs".
 
 echo >&2 '*** Some "duplicate column name" and "duplicate key name" errors are normal here ***'
-cat $SCRIPT_DIR/upgrade-db.sql | sed -e "s/shakespeare/$dbpass/g" | mysql -uinstaller -p"$dbpass" --force
+cat $SCRIPT_DIR/upgrade-db.sql | sed -e 's/shakespeare/$ENV{"dbpass"}/g' | mysql -uinstaller -p"$dbpass" --force

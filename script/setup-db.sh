@@ -27,7 +27,7 @@ if [ ! -e $DATA/mysql.stamp ]; then
   [ $? = 0 ]
 
   pwprompt
-  cat $SCRIPT_DIR/setup-db-users.sql $SCRIPT_DIR/setup-db-tables.sql | sed -e "s/shakespeare/$dbpass/g" | mysql -uroot -p
+  cat $SCRIPT_DIR/setup-db-users.sql $SCRIPT_DIR/setup-db-tables.sql | sed -e "s/shakespeare/$dbpass/g" | mysql -uroot -p -f
   touch $DATA/mysql.stamp
 else
   export dbpass=$(cat $CONFIG/dbpassword)

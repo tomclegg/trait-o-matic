@@ -1,5 +1,5 @@
 -- should be run with "mysql --force" so grant statements run even
--- though databses already exist
+-- though databases already exist
 
 CREATE DATABASE `genotypes` DEFAULT CHARACTER SET ASCII COLLATE ascii_general_ci;
 CREATE DATABASE `ariel` DEFAULT CHARACTER SET ASCII COLLATE ascii_general_ci;

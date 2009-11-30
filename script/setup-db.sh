@@ -2,6 +2,7 @@
 
 set -e
 set -o pipefail
+. "$(echo "$0" | sed -e 's/[^\/]*$//')defaults.sh"
 
 pwprompt()
 {

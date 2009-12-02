@@ -141,15 +141,15 @@ fi
 # HapMap (slow version)
 if [ ! -f hapmap.stamp ]; then
   if [ ! -f hapmapfiles.stamp ]; then
-    try_whget /Trait-o-matic/data/hapmap ftp.hapmap.org || \
-    $WGET -r -l1 --accept allele\* --no-parent http://ftp.hapmap.org/frequencies/2009-02_phaseII+III/forward/non-redundant/
-    rm -f ftp.hapmap.org/frequencies/2009-02_phaseII+III/forward/non-redundant/genotype* || true
+    try_whget /Trait-o-matic/data/ncbi-hapmap ftp.ncbi.nlm.nih.gov || \
+    $WGET -r -l1 --accept allele\* --no-parent ftp://ftp.ncbi.nlm.nih.gov/hapmap/frequencies/2009-02_phaseII+III/forward/non-redundant/
+    rm -f ftp.ncbi.nlm.nih.gov/hapmap/frequencies/2009-02_phaseII+III/forward/non-redundant/genotype* || true
     touch hapmapfiles.stamp
   fi
   echo
   echo "*** Loading HapMap data, this could take hours..."
   echo
-  for file in ftp.hapmap.org/frequencies/2009-02_phaseII+III/forward/non-redundant/allele_* ; do
+  for file in ftp.ncbi.nlm.nih.gov/hapmap/frequencies/2009-02_phaseII+III/forward/non-redundant/allele_* ; do
     cat=cat
     if [ "${file##*.}" = bz2 ]; then cat="bzip2 -cd"; fi
     if [ "${file##*.}" = gz ]; then cat="gzip -cd"; fi

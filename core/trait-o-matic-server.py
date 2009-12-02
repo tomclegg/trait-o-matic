@@ -167,7 +167,7 @@ def main():
 		cmd = '''(
 		flock --nonblock --exclusive 2 || exit
 		set -x
-		%(fetch)s '%(in)s' | python '%(A)s' '%(reference)s' /dev/stdin > '%(1)s'
+		%(fetch)s '%(in)s' | gzip -cdf | python '%(A)s' '%(reference)s' /dev/stdin | egrep 'ref_allele [ACGTN]' > '%(1)s'
 		python '%(B)s' '%(1)s' > '%(2)s'
 		python '%(C)s' '%(2)s' '%(reference)s' > '%(3)s'
 		python '%(D)s' '%(3)s' > '%(4)s'

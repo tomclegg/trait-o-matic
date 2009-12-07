@@ -13,6 +13,12 @@ cp /tmp/php.ini /etc/php5/apache2/php.ini
 sudo -u "$USER" mkdir -p $TMP $UPLOAD $LOG
 if [ "$USER" != www-data ]; then sudo -u "$USER" chmod a+rwxt $TMP $UPLOAD; fi
 
+# Do not wipe /tmp on reboot
+if egrep '^TMPTIME=[0-9]' /etc/default/rcS >/dev/null
+then
+  sudo perl -pi.bak -e 's/^TMPTIME=\d/TMPTIME=-1\n#$&/' /etc/default/rcS
+fi
+
 # Apache config
 perl -p -e 's/%([A-Z]+)%/$ENV{$1}/g' < $SCRIPT_DIR/trait-apache-site.in > /tmp/trait-apache-site
 cp -f /tmp/trait-apache-site /etc/apache2/sites-available/trait-o-matic

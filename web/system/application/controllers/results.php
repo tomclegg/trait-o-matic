@@ -367,6 +367,16 @@ class Results extends Controller {
 				$filename .= ".json";
 				header ("Content-type: text/json");
 				header ("Content-disposition: attachment; filename=\"{$filename}\"");
+				$data['variants'] = array();
+				foreach (array ("omim", "snpedia", "hgmd", "pharmgkb", "morbid") as $section) {
+				  if (array_key_exists ($section, $data['phenotypes'])) {
+				    foreach ($data['phenotypes'][$section] as $x) {
+				      $x['database'] = $section;
+				      $data['variants'][] = $x;
+				    }
+				    unset ($data['phenotypes'][$section]);
+				  }
+				}
 				print json_encode ($data);
 			}
 			else

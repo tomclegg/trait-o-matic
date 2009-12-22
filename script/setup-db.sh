@@ -40,6 +40,13 @@ else
     # no "installer" user -- old install, need to fix mysql permissions
     pwprompt
     cat $SCRIPT_DIR/setup-db-users.sql | sed -e 's/shakespeare/$ENV{"dbpass"}/g' | mysql -uroot -p -f
+  elif ! mysql -uinstaller -p"$dbpass" <<"  EOF" get_evidence >/dev/null
+  select now()
+  EOF
+  then
+    # no "get_evidence" db -- fix
+    pwprompt
+    cat $SCRIPT_DIR/setup-db-users.sql | grep get_evidence | sed -e 's/shakespeare/$ENV{"dbpass"}/g' | mysql -uroot -p -f
   fi
 fi
 

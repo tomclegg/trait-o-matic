@@ -29,6 +29,10 @@ PHARMGKB_USER = "reader"
 PHARMGKB_PASSWD = "shakespeare"
 PHARMGKB_DATABASE = "pharmgkb"
 
+GETEVIDENCE_USER = "updater"
+GETEVIDENCE_PASSWD = "shakespeare"
+GETEVIDENCE_DATABASE = "get_evidence"
+
 GENOTYPE_USER = "updater"
 GENOTYPE_PASSWD = "shakespeare"
 GENOTYPE_DATABASE = "genotypes"

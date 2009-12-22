@@ -368,7 +368,7 @@ class Results extends Controller {
 				header ("Content-type: text/json");
 				header ("Content-disposition: attachment; filename=\"{$filename}\"");
 				$data['variants'] = array();
-				foreach (array ("omim", "snpedia", "hgmd", "pharmgkb", "morbid") as $section) {
+				foreach (array ("omim", "snpedia", "hgmd", "pharmgkb", "morbid", "get-evidence") as $section) {
 				  if (array_key_exists ($section, $data['phenotypes'])) {
 				    foreach ($data['phenotypes'][$section] as $x) {
 				      $x['database'] = $section;
@@ -483,6 +483,7 @@ class Results extends Controller {
 		if ($this->config->item('enable_pharmgkb'))
 			$data['phenotypes']['pharmgkb'] = $this->_load_output_data('pharmgkb', $job_id, $job_dir);
 		$data['phenotypes']['morbid'] = $this->_load_output_data('morbid', $job_id, $job_dir);
+		$data['phenotypes']['get-evidence'] = $this->_load_output_data('get-evidence', $job_id, $job_dir);
 
 		if ($this->config->item('enable_warehouse_storage'))
 		{

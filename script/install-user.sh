@@ -15,6 +15,11 @@ mkdir -p $CONFIG
 mkdir -p $TMP
 mkdir -p $DATA
 
+for var in WWW CONFIG TMP DATA HOME USER BASE_URL
+do
+  eval echo $var=\$`echo $var`
+done >$CONFIG/config.sh
+
 $SCRIPT_DIR/setup-db.sh
 $SCRIPT_DIR/setup-www.sh
 # $SCRIPT_DIR/setup-external-data.sh

@@ -7,6 +7,7 @@ CREATE DATABASE `caliban` DEFAULT CHARACTER SET ASCII COLLATE ascii_general_ci;
 CREATE DATABASE `dbsnp` DEFAULT CHARACTER SET ascii COLLATE ascii_general_ci;
 CREATE DATABASE `hgmd_pro` DEFAULT CHARACTER SET ascii COLLATE ascii_general_ci;
 CREATE DATABASE `pharmgkb` DEFAULT CHARACTER SET ascii COLLATE ascii_general_ci;
+CREATE DATABASE `get_evidence` DEFAULT CHARACTER SET ascii COLLATE ascii_general_ci;
 
 -- drop non-local users if they exist (from previous installation),
 -- first giving them a row in the access table to prevent mysql errors
@@ -39,4 +40,5 @@ GRANT ALL PRIVILEGES ON `dbsnp`.* TO `installer`@`localhost` WITH GRANT OPTION;
 GRANT ALL PRIVILEGES ON `hgmd_pro`.* TO `installer`@`localhost` WITH GRANT OPTION;
 GRANT ALL PRIVILEGES ON `genotypes`.* TO `installer`@`localhost` WITH GRANT OPTION;
 GRANT ALL PRIVILEGES ON `pharmgkb`.* TO `installer`@`localhost` WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON `get_evidence`.* TO `installer`@`localhost` WITH GRANT OPTION;
 GRANT CREATE USER ON *.* TO `installer`@`localhost`;

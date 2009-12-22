@@ -35,3 +35,10 @@ chmod 755 /etc/init.d/trait-o-matic.tmp
 chown 0:0 /etc/init.d/trait-o-matic.tmp
 mv /etc/init.d/trait-o-matic.tmp /etc/init.d/trait-o-matic
 update-rc.d trait-o-matic start 20 2 3 4 5 . stop 80 0 1 6 .
+
+# Update GET/Evidence data
+minutes=`tr -cd 0-5 </dev/urandom | head -c2`
+cat <<EOF >/etc/cron.d/trait-o-matic
+CONFIG=$CONFIG
+$minutes 1 * * * $USER $CORE/update-get-evidence.sh
+EOF

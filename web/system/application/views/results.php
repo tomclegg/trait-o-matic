@@ -93,7 +93,7 @@ $public_mode_actions = array(
 			</div>
 			<div id="results">
 <?php
-foreach (array('omim' => 'OMIM', 'snpedia' => 'SNPedia', 'hgmd' => 'HGMD', 'pharmgkb' => 'PharmGKB (beta)', 'morbid' => 'Other hypotheses') as $k => $v):
+foreach (array('get-evidence' => 'GET/Evidence', 'omim' => 'OMIM', 'snpedia' => 'SNPedia', 'hgmd' => 'HGMD', 'pharmgkb' => 'PharmGKB (beta)', 'morbid' => 'Other hypotheses') as $k => $v):
 	if (!isset($phenotypes[$k])) continue;
 ?>
 			<h3 class="toggle"><?php echo htmlspecialchars($v); ?><?php if (array_key_exists($k, $phenotypes) && count($phenotypes[$k])): ?> <span class="count">(<?php echo count($phenotypes[$k]); ?>)</span><?php endif; ?></h3>

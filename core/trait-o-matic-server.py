@@ -148,7 +148,7 @@ def main():
 		         '1': os.path.join(output_dir, "genotype.gff"),
 		         '2': os.path.join(output_dir, "genotype.dbsnp.gff"),
 		         'ns_gff': os.path.join(output_dir, "ns.gff"),
-			 'ns_filters': "omim hgmd morbid pharmgkb",
+			 'ns_filters': "omim hgmd morbid pharmgkb get-evidence",
 			 'script_dir': script_dir,
 			 'output_dir': output_dir,
 			 'lockfile': os.path.join(output_dir, "lock")}

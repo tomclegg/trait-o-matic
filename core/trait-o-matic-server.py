@@ -151,7 +151,8 @@ def main():
 			 'ns_filters': "omim hgmd morbid pharmgkb get-evidence",
 			 'script_dir': script_dir,
 			 'output_dir': output_dir,
-			 'lockfile': os.path.join(output_dir, "lock")}
+			 'lockfile': os.path.join(output_dir, "lock"),
+			 'logfile': os.path.join(output_dir, "log")}
 
 		cmd = '''(
 		flock --nonblock --exclusive 2 || exit
@@ -186,7 +187,7 @@ def main():
 			python '%(Z)s' -t '%(url)s' '%(output_dir)s'/$filter.json out/$filter '%(token)s'
 		done
 		python '%(Z)s' -t '%(url)s' '%(output_dir)s'/README out/readme '%(token)s'
-		rm -f %(lockfile)s
+		mv %(lockfile)s %(logfile)s
 		) 2>>%(lockfile)s &''' % args
 		subprocess.call(cmd, shell=True)
 		return output_dir
@@ -195,9 +196,11 @@ def main():
 	def get_progress(genotype_file):
 		output_dir = os.path.dirname(genotype_file) + "-out"
 		lockfile = os.path.join(output_dir,'lock')
+		logfile = os.path.join(output_dir,'log')
 		# remove the lockfile if it is stale
-		subprocess.call('flock --nonblock --exclusive %(lock)s rm -f %(lock)s 2>/dev/null || true'
-				% { "lock": lockfile }, shell=True)
+		subprocess.call('flock --nonblock --exclusive %(lock)s mv %(lock)s %(log)s 2>/dev/null || true'
+				% { "lock": lockfile,
+				    "log": logfile }, shell=True)
 		if os.path.exists(lockfile):
 			return { "state": "processing" }
 		else:

@@ -22,7 +22,9 @@ from config import DB_HOST, GETEVIDENCE_USER, GETEVIDENCE_PASSWD, GETEVIDENCE_DA
 query = '''
 SELECT inheritance, impact, summary_short
 FROM latest
-WHERE gene=%s AND aa_change=%s AND LENGTH(summary_short)>0
+WHERE gene=%s AND aa_change=%s
+ AND impact NOT IN ('benign', 'putative benign')
+ AND LENGTH (summary_short) > 0
 '''
 
 def main():

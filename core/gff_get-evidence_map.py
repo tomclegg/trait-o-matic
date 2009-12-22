@@ -24,7 +24,7 @@ SELECT inheritance, impact, summary_short
 FROM latest
 WHERE gene=%s AND aa_change=%s
  AND impact NOT IN ('benign', 'putative benign')
- AND LENGTH (summary_short) > 0
+ AND LENGTH(summary_short) > 0
 '''
 
 def main():

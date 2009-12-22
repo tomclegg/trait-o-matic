@@ -181,15 +181,13 @@ def main():
 		done
 		python '%(script_dir)s'/json_to_job_database.py --drop-tables $jsons
 		touch README
-		for filter in %(ns_filters) snpedia ns
+		for filter in %(ns_filters)s snpedia ns
 		do
 			python '%(Z)s' -t '%(url)s' '%(output_dir)s'/$filter.json out/$filter '%(token)s'
 		done
 		python '%(Z)s' -t '%(url)s' '%(output_dir)s'/README out/readme '%(token)s'
 		rm -f %(lockfile)s
 		) 2>>%(lockfile)s &''' % args
-		print "foo"
-		print cmd
 		subprocess.call(cmd, shell=True)
 		return output_dir
 	server.register_function(submit_local)

@@ -105,7 +105,7 @@ def main():
 		return s
 	server.register_function(submit)
 	
-	def submit_local(genotype_file, coverage_file='', trackback_url='', request_token=''):
+	def submit_local(genotype_file, coverage_file='', trackback_url='', request_token='', reprocess_all=False):
 		# create output dir
 		input_dir = os.path.dirname(genotype_file)
 		output_dir = input_dir + "-out"
@@ -135,17 +135,10 @@ def main():
 				fetch_command = "whget"
 
 		# letters refer to scripts; numbers refer to outputs
-		args = { 'A': os.path.join(script_dir, "gff_twobit_query.py"),
+		args = { 'reprocess_all': reprocess_all,
+			 'A': os.path.join(script_dir, "gff_twobit_query.py"),
 		         'B': os.path.join(script_dir, "gff_dbsnp_query.py"),
 		         'C': os.path.join(script_dir, "gff_nonsynonymous_filter.py"),
-		         'D': os.path.join(script_dir, "gff_omim_map.py"),
-		         'E': os.path.join(script_dir, "gff_hgmd_map.py"),
-		         'F': os.path.join(script_dir, "gff_morbid_map.py"),
-		         'G': os.path.join(script_dir, "gff_snpedia_map.py"),
-		         'gff2json_bin': os.path.join(script_dir, "gff2json.py"),
-		         'pharmgkb_bin': os.path.join(script_dir, "gff_pharmgkb_map.py"),
-		         'H': os.path.join(script_dir, "json_allele_frequency_query.py"),
-		         'I': os.path.join(script_dir, "json_to_job_database.py"),
 		         'Z': os.path.join(script_dir, "trait-o-matic-server.py"),
 		         'in': genotype_file,
 			 'fetch': fetch_command,
@@ -154,40 +147,49 @@ def main():
 		         'token': request_token,
 		         '1': os.path.join(output_dir, "genotype.gff"),
 		         '2': os.path.join(output_dir, "genotype.dbsnp.gff"),
-		         '3': os.path.join(output_dir, "ns.gff"),
-		         '4': os.path.join(output_dir, "omim.json"),
-		         '5': os.path.join(output_dir, "hgmd.json"),
-		         '6': os.path.join(output_dir, "morbid.json"),
-		         '7': os.path.join(output_dir, "snpedia.json"),
-		         'ns_json': os.path.join(output_dir, "ns.json"),
-		         'pharmgkb_json': os.path.join(output_dir, "pharmgkb.json"),
-		         '8': "",
-		         '0': os.path.join(output_dir, "README"),
+		         'ns_gff': os.path.join(output_dir, "ns.gff"),
+			 'ns_filters': "omim hgmd morbid pharmgkb",
+			 'script_dir': script_dir,
+			 'output_dir': output_dir,
 			 'lockfile': os.path.join(output_dir, "lock")}
+
 		cmd = '''(
 		flock --nonblock --exclusive 2 || exit
 		set -x
-		%(fetch)s '%(in)s' | gzip -cdf | python '%(A)s' '%(reference)s' /dev/stdin | egrep 'ref_allele [ACGTN]' > '%(1)s'
-		python '%(B)s' '%(1)s' > '%(2)s'
-		python '%(C)s' '%(2)s' '%(reference)s' > '%(3)s'
-		python '%(D)s' '%(3)s' > '%(4)s'
-		python '%(E)s' '%(3)s' > '%(5)s'
-		python '%(F)s' '%(3)s' > '%(6)s'
-		python '%(G)s' '%(2)s' > '%(7)s'
-		python '%(gff2json_bin)s' '%(3)s' > '%(ns_json)s'
-		python '%(pharmgkb_bin)s' '%(3)s' > '%(pharmgkb_json)s'
-		python '%(H)s' '%(4)s' '%(5)s' '%(6)s' '%(7)s' '%(pharmgkb_json)s' --in-place
-		python '%(I)s' --drop-tables '%(4)s' '%(5)s' '%(6)s' '%(7)s' '%(pharmgkb_json)s' '%(ns_json)s'
-		touch '%(0)s'
-		python '%(Z)s' -t '%(url)s' '%(4)s' 'out/omim' '%(token)s'
-		python '%(Z)s' -t '%(url)s' '%(5)s' 'out/hgmd' '%(token)s'
-		python '%(Z)s' -t '%(url)s' '%(6)s' 'out/morbid' '%(token)s'
-		python '%(Z)s' -t '%(url)s' '%(7)s' 'out/snpedia' '%(token)s'
-		python '%(Z)s' -t '%(url)s' '%(pharmgkb_json)s' 'out/pharmgkb' '%(token)s'
-		python '%(Z)s' -t '%(url)s' '%(ns_json)s' 'out/ns' '%(token)s'
-		python '%(Z)s' -t '%(url)s' '%(0)s' 'out/readme' '%(token)s'
+		cd '%(output_dir)s' || exit
+		if [ ! -e '%(ns_gff)s' -o ! -e '%(1)s' -o '%(reprocess_all)s' != False ]
+		then
+			%(fetch)s '%(in)s' | gzip -cdf | python '%(A)s' '%(reference)s' /dev/stdin | egrep 'ref_allele [ACGTN]' > '%(1)s'.tmp
+			mv '%(1)s'.tmp '%(1)s'
+
+			python '%(B)s' '%(1)s' > '%(2)s'.tmp
+			mv '%(2)s'.tmp '%(2)s'
+
+			python '%(C)s' '%(2)s' '%(reference)s' > '%(ns_gff)s'.tmp
+			mv '%(ns_gff)s'.tmp '%(ns_gff)s'
+		fi
+		python '%(script_dir)s'/gff2json.py '%(ns_gff)s' > ns.json
+
+		python '%(script_dir)s'/gff_snpedia_map.py '%(2)s' > snpedia.json
+		jsons='%(output_dir)s'/snpedia.json
+
+		for filter in %(ns_filters)s
+		do
+			python '%(script_dir)s'/gff_${filter}_map.py '%(ns_gff)s' > "$filter.json"
+			python '%(script_dir)s'/json_allele_frequency_query.py "$filter.json" --in-place
+			jsons="$jsons %(output_dir)s/$filter.json"
+		done
+		python '%(script_dir)s'/json_to_job_database.py --drop-tables $jsons
+		touch README
+		for filter in %(ns_filters) snpedia ns
+		do
+			python '%(Z)s' -t '%(url)s' '%(output_dir)s'/$filter.json out/$filter '%(token)s'
+		done
+		python '%(Z)s' -t '%(url)s' '%(output_dir)s'/README out/readme '%(token)s'
 		rm -f %(lockfile)s
 		) 2>>%(lockfile)s &''' % args
+		print "foo"
+		print cmd
 		subprocess.call(cmd, shell=True)
 		return output_dir
 	server.register_function(submit_local)

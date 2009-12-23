@@ -27,12 +27,14 @@ class Browse extends Controller {
     }
   }
 
-  function allsnps($filters)
+  function allsnps($filters='public')
   {
     $this->config->load('trait-o-matic');
     if ($this->config->item('enable_browse_shared')) {
       $this->_browse_allsnps($filters);
     }
+    else
+      $this->_browse_allsnps('public,'.$filters);
   }
 
   function _get_warehouse_list()

@@ -163,11 +163,14 @@ class Browse extends Controller {
   a.ref_allele ref_allele,
   a.genotype genotype,
   a.zygosity zygosity,
-  username
+  humans.id human_id,
+  humans.global_id global_human_id,
+  if(humans.name is null,username,humans.name) name
  from genotypes.allsnps a
  left join files on kind='out/readme' and path like concat('%/',a.job,'%')
  left join jobs on jobs.id=files.job and jobs.public >= $public_min
  left join users on jobs.user=users.id
+ left join humans on humans.id=jobs.human
  $left_join_a2
  where a.module = 'ns'
    and users.id is not null
@@ -221,7 +224,7 @@ class Browse extends Controller {
       }
 
       // add this variant to the output queue
-      $outq .= sprintf ("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+      $outq .= sprintf ("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
 			$row->gene,
 			$row->amino_acid_change,
 			$row->chromosome,
@@ -230,7 +233,9 @@ class Browse extends Controller {
 			$row->ref_allele,
 			$row->genotype,
 			$row->zygosity,
-			$row->username);
+			$row->human_id,
+			$row->global_human_id,
+			$row->name);
     }
     if (!$skipthis)
       print $outq;

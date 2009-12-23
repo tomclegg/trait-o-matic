@@ -32,6 +32,7 @@ class Job extends Model {
 		if (is_object($where))
 			$where = get_object_vars($where);		
 		$this->db->where($where);
+		$this->db->order_by('id', 'desc');
 		$query = $this->db->get($this->_table, $limit, $offset);
 		if (is_object($where))
 			return $limit == 1 ? $query->row() : $query->result();

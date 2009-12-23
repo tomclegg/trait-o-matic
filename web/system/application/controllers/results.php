@@ -43,7 +43,38 @@ class Results extends Controller {
 	{
 		$this->_force_download_source_file('html', $want_job_id);
 	}
-	
+
+	function human($want_human_id)
+	{
+		$this->load->model('Job', 'job', TRUE);
+		$this->load->model('Human', 'human', TRUE);
+		$this->config->load('trait-o-matic');
+		$public_min = $this->config->item('enable_browse_shared') ? 0 : 1;
+
+		// TODO: if more than one job exists for this human,
+		// show a list instead of just displaying the last one
+		// submitted
+
+		$job = $this->job->get (array ('human' => $want_human_id,
+					       'public >=' => $public_min), 1);
+
+		$auth_user = $this->_authenticate(FALSE);
+		if ($auth_user) {
+
+			// If user is logged in, and has a newer job
+			// associated with this human, show the user's
+			// own job instead of the public/shared one
+			// found above.
+
+			$myjob = $this->job->get (array ('human' => $want_human_id,
+							 'user' => $auth_user['id']), 1);
+			if ($myjob && (!$job || $myjob['id'] > $job['id']))
+				$job = $myjob;
+		}
+
+		header ("Location: /results/job/$job[id]");
+	}
+
 	// in ./system/application/config/routes.php,
 	// chmod/:any/:any is remapped to this function	
 	function chmod()
@@ -269,6 +300,8 @@ class Results extends Controller {
 	// it returns an associative array of user details
 	function _authenticate($mandatory=TRUE)
 	{
+		$this->load->model('User', 'user', TRUE);
+		
 		if ($this->input->post('username') !== FALSE)
 		{
 			// populate array with user details

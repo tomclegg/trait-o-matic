@@ -180,7 +180,7 @@ def main():
 			python '%(script_dir)s'/json_allele_frequency_query.py "$filter.json" --in-place
 			jsons="$jsons %(output_dir)s/$filter.json"
 		done
-		python '%(script_dir)s'/json_to_job_database.py --drop-tables $jsons
+		python '%(script_dir)s'/json_to_job_database.py --drop-tables $jsons '%(output_dir)s'/ns.json
 		touch README
 		for filter in %(ns_filters)s snpedia ns
 		do

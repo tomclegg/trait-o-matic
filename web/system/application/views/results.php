@@ -7,6 +7,7 @@ require ('top.php');
 		<div id="main">
 			<div class="two-column">
 				<div class="column">
+<div class="portrait" style="float:right;"><img src="<?php echo $job['image']; ?>" width="100" height="100" alt="" /></div>
 					<h3><?php echo htmlspecialchars(ereg_replace("\n.*","",$job['label'])); ?></h3>
 					<p><?php echo nl2br(htmlspecialchars(ereg_replace("^[^\n]*\n?","",$job['label']))); ?></p>
 <?php if (!(array_key_exists ('human', $job) && $job['human'])): ?>

@@ -120,10 +120,14 @@ index stylesheet
 	text-decoration: none;
 }
 
-#glider .scroller .link img {
+#glider .scroller .link img, .portrait img {
 	background: #fff;
 	padding: 4px;
 	border: 1px solid #7f97c9;
+}
+
+.portrait {
+	margin: 20px 10px 10px 10px;
 }
 
 .js {

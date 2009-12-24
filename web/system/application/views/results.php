@@ -7,12 +7,15 @@ require ('top.php');
 		<div id="main">
 			<div class="two-column">
 				<div class="column">
-					<h3><?php echo $username; ?></h3>
+					<h3><?php echo htmlspecialchars(ereg_replace("\n.*","",$job['label'])); ?></h3>
+					<p><?php echo nl2br(htmlspecialchars(ereg_replace("^[^\n]*\n?","",$job['label']))); ?></p>
+<?php if (!(array_key_exists ('human', $job) && $job['human'])): ?>
 <?php if (array_key_exists ('date-of-birth', $phenotypes)): ?>
 					<p>Date of birth: <?php echo $phenotypes['date-of-birth']; ?><br>
 <?php endif; ?>
 <?php if (array_key_exists('sex', $phenotypes) && array_key_exists('ancestry', $phenotypes)): ?>
 					<?php echo ucfirst(lang($phenotypes['sex'])); ?>, <?php function r($v, $w) { if ($v != '') { $v .= ', '; } $v .= lang($w); return $v; } print array_reduce($phenotypes['ancestry'], 'r'); ?></p>
+<?php endif; ?>
 <?php endif; ?>
 
 <?php if ($this->config->item('enable_download_gff')): ?>

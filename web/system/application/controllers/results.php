@@ -468,6 +468,8 @@ class Results extends Controller {
 	{
 		// load necessary modules
 		$this->load->model('File', 'file', TRUE);
+		$this->load->model('User', 'user', TRUE);
+		$this->load->model('Human', 'human', TRUE);
 		$this->load->model('Job', 'job', TRUE);
 		$this->load->helper('file');
 		$this->load->helper('json');
@@ -490,7 +492,11 @@ class Results extends Controller {
 		$most_recent_job = end($jobs);
 		if (!$most_recent_job)
 			return;
-		
+
+		$data['job'] = $this->job->get_all ($most_recent_job,
+						    $this->user->get(array('id'=>$most_recent_job['user']),1),
+						    $this->human->get(array('id'=>$most_recent_job['human']),1));
+
 		// update retrieval timestamp on the most recent job
 		$debug_most_recent_job_id = $most_recent_job['id'];
 		log_message('debug', "Updating timestamp on {$debug_most_recent_job_id}");

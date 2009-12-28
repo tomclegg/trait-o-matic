@@ -393,7 +393,7 @@ class Results extends Controller {
 				$public_min = -1;
 			$data = $this->_prep_results ($user, $public_min, $job['id']);
 			if (!$data)
-				return;
+				return $this->_authenticate (TRUE);
 			if ($what == "json") {
 				$filename = $user['username'];
 				if ($job['processed'])

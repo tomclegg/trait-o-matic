@@ -77,6 +77,7 @@ class Reprocess extends Controller {
 		}
 		
 		$data['heading'] = 'Reprocessing Query';
+		$data['job'] = $job;
 		$this->load->view('confirm', $data);
 	}
 	

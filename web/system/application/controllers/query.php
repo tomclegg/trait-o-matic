@@ -238,8 +238,8 @@ class Query extends Controller {
 				//TODO: error out, with some sort of interface
 			}
 
-			//TODO: make a confirmation page
-			$this->load->view('confirm');
+			$data = array ('job' => $job);
+			$this->load->view('confirm', $data);
 		}
 		else if ($this->input->post('submit-from-warehouse-form'))
 		{

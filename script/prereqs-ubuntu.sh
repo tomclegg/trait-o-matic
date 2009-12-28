@@ -23,6 +23,7 @@ php5-dev \
 php5-mysql \
 python-biopython \
 php5-gd \
+cron \
 --fix-missing || \
 cat >&2 <<EOF
 ***

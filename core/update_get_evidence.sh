@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS latest_tmp (
  UNIQUE KEY (gene, aa_change)
 );
 LOCK TABLES latest_tmp WRITE;
+DELETE FROM latest_tmp;
 LOAD DATA LOCAL INFILE '$DATA/get-evidence-data.fifo' INTO TABLE \`latest_tmp\` FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';
 UNLOCK TABLES;
 

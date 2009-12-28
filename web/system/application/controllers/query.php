@@ -230,6 +230,7 @@ class Query extends Controller {
 			$this->xmlrpc->server('http://localhost/', 8080);
 			$this->xmlrpc->method('submit_local');
 			$request = array($genotype_path, $coverage_path, $trackback_url, $request_token);
+			log_message ('debug', 'query: submit_local("'.implode('", "',$request).'")');
 			$this->xmlrpc->request($request);
 			if (!$this->xmlrpc->send_request())
 			{
@@ -344,17 +345,19 @@ class Query extends Controller {
 		$path = $this->input->post('path');
 		$kind = $this->input->post('kind');
 		$request_token = $this->input->post('request_token');
-		if (!$path || !$kind || !$request_token)
-			return;
+		if (!$path || !$kind || !$request_token) {
+			log_message ('error', "missing trackback arg: got path=$path kind=$kind request_token=$request_token");
+			die ("no path/kind/request_token");
+		}
 		
 		log_message('debug', "Trackback with request token {$request_token} received, path={$path} kind={$kind}");
 		// check the claimed request token against what we know
 		$request_token_file = $this->file->get(array('job' => $job, 'kind' => 'request token'), 1);
 		if (!$request_token_file)
-			return;
+			die ("no request token file");
 		$request_token_path = $request_token_file['path'];
-		if (!$request_token == read_file($request_token_path))
-			return;
+		if ($request_token !== read_file($request_token_path))
+			die ("token mismatch");
 		
 		// if the file is a readme, then the job is complete
 		// we should record this, and also email the user if necessary

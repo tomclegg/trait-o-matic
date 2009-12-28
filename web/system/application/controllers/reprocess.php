@@ -64,6 +64,7 @@ class Reprocess extends Controller {
 		$this->xmlrpc->server('http://localhost/', 8080);
 		$this->xmlrpc->method('submit_local');
 		$request = array($genotype_path, $coverage_path, $trackback_url, $request_token);
+		log_message ('debug', 'reprocess: submit_local("'.implode('", "',$request).'")');
 		$this->xmlrpc->request($request);
 		if (!$this->xmlrpc->send_request())
 		{

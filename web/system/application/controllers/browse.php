@@ -157,6 +157,7 @@ class Browse extends Controller {
 
     $query = $this->db->query("
  select
+  jobs.id job_id,
   a.gene gene,
   a.amino_acid_change amino_acid_change,
   a.chromosome chromosome,
@@ -165,8 +166,7 @@ class Browse extends Controller {
   a.ref_allele ref_allele,
   a.genotype genotype,
   a.zygosity zygosity,
-  humans.id human_id,
-  humans.global_id global_human_id,
+  if(humans.global_id is null or humans.global_id='',concat(?,humans.id),humans.global_id) global_human_id,
   if(humans.name is null,username,humans.name) name
  from genotypes.allsnps a
  left join files on kind='out/readme' and path like concat('%/',a.job,'%')
@@ -177,7 +177,8 @@ class Browse extends Controller {
  where a.module = 'ns'
    and users.id is not null
    $and_a2_gene_is_null
- order by a.gene, a.chromosome, a.coordinates");
+ order by a.gene, a.chromosome, a.coordinates",
+			      array (trim(`hostname -s`)."-"));
     header("Content-type: text/plain");
     $outq = "";
     $skipthis = 0;
@@ -235,7 +236,7 @@ class Browse extends Controller {
 			$row->ref_allele,
 			$row->genotype,
 			$row->zygosity,
-			$row->human_id,
+			$row->job_id,
 			$row->global_human_id,
 			$row->name);
     }

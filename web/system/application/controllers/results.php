@@ -584,6 +584,8 @@ class Results extends Controller {
 		}
 		// default sort; first obtain list of columns by which to sort
 		foreach ($data as $key => $row) {
+			if (!is_array ($row))
+				continue;
 			if (array_key_exists ('taf', $row) && is_object($row['taf']))
 				;
 			else if (!array_key_exists ('taf', $row) ||

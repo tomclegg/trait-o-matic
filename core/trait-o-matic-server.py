@@ -157,6 +157,7 @@ def main():
 		cmd = '''(
 		flock --nonblock --exclusive 2 || exit
 		set -x
+		set -e
 		cd '%(output_dir)s' || exit
 		if [ ! -e '%(ns_gff)s' -o ! -e '%(1)s' -o '%(reprocess_all)s' != False ]
 		then
@@ -169,14 +170,17 @@ def main():
 			python '%(C)s' '%(2)s' '%(reference)s' > '%(ns_gff)s'.tmp
 			mv '%(ns_gff)s'.tmp '%(ns_gff)s'
 		fi
-		python '%(script_dir)s'/gff2json.py '%(ns_gff)s' > ns.json
+		python '%(script_dir)s'/gff2json.py '%(ns_gff)s' > ns.json.tmp
+		mv ns.json.tmp ns.json
 
-		python '%(script_dir)s'/gff_snpedia_map.py '%(2)s' > snpedia.json
+		python '%(script_dir)s'/gff_snpedia_map.py '%(2)s' > snpedia.json.tmp
+		mv snpedia.json.tmp snpedia.json
 		jsons='%(output_dir)s'/snpedia.json
 
 		for filter in %(ns_filters)s
 		do
-			python '%(script_dir)s'/gff_${filter}_map.py '%(ns_gff)s' > "$filter.json"
+			python '%(script_dir)s'/gff_${filter}_map.py '%(ns_gff)s' > "$filter.json.tmp"
+			mv "$filter.json.tmp" "$filter.json"
 			python '%(script_dir)s'/json_allele_frequency_query.py "$filter.json" --in-place
 			jsons="$jsons %(output_dir)s/$filter.json"
 		done

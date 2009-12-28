@@ -25,6 +25,7 @@ class Results extends Controller {
 	{
 		// load necessary modules
 		$this->load->model('User', 'user', TRUE);
+		$this->config->load('trait-o-matic');
 		
 		// authenticate
 		$user_details = $this->_authenticate(TRUE);

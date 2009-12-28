@@ -80,7 +80,13 @@ $public_mode_actions = array(
 );
 ?>
 					<p>Currently, <strong><?php echo htmlspecialchars($public_mode_strings[$job_public_mode]); ?></strong> may view these results<?php if($this->config->item('enable_chmod')): foreach($public_mode_actions as $k => $v): if ($job_public_mode != $k): ?><br><a href="/chmod/<?php echo urlencode($public_mode_symbols[$k]); ?>/<?php echo urlencode($job_id); ?>"><?php echo htmlspecialchars($v); ?></a><?php endif; endforeach; endif; ?></p>
-					<p><a href="/reprocess/<?php echo urlencode($job_id); ?>" onclick="return window.confirm('Are you sure you want to discard current results and reprocess this query?')">Reprocess this query</a> &nbsp;&bull;&nbsp; <a href="/logout/">Log out</a></p>
+<?php endif; ?>
+<?php $this->load->config('trait-o-matic');
+      if (!$public || $this->config->item('enable_reprocess_any')): ?>
+					<p><a href="/reprocess/<?php echo urlencode($job_id); ?>" onclick="return window.confirm('Are you sure you want to discard current results and reprocess this query?')">Reprocess this query</a>
+<?php if (!$public): ?>
+					 &nbsp;&bull;&nbsp; <a href="/logout/">Log out</a></p>
+<?php endif; ?>
 <?php endif; ?>
 				</div>
 				<div class="last column">

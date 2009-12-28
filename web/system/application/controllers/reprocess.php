@@ -16,6 +16,7 @@ class Reprocess extends Controller {
 		$this->load->model('File', 'file', TRUE);
 		$this->load->model('Job', 'job', TRUE);
 		$this->load->model('User', 'user', TRUE);
+		$this->config->load('trait-o-matic');
 		
 		// keep track of the job ID (very important!)
 		$job = $this->uri->rsegment(3);
@@ -23,20 +24,23 @@ class Reprocess extends Controller {
 		{
 			return;
 		}
-		
-		// authenticate
-		$user_details = $this->_authenticate();
-		if (!$user_details)
-			return;
-				
-		// now make sure the user is the correct one (i.e. the owner of the job)
-		$user = $this->user->get($user_details, 1);
-		if (!$this->job->count(array('user' => $user['id'], 'id' => $job)))
+
+		if (!$this->config->item('enable_reprocess_any'))
 		{
-			$data['error'] = 'Only users who have submitted a query may have it reprocessed.';
-			$data['redirect'] = $this->uri->uri_string();
-			$this->load->view('login', $data);
-			return;
+			// authenticate
+			$user_details = $this->_authenticate();
+			if (!$user_details)
+				return;
+
+			// now make sure the user is the correct one (i.e. the owner of the job)
+			$user = $this->user->get($user_details, 1);
+			if (!$this->job->count(array('user' => $user['id'], 'id' => $job)))
+			{
+				$data['error'] = 'Only users who have submitted a query may have it reprocessed.';
+				$data['redirect'] = $this->uri->uri_string();
+				$this->load->view('login', $data);
+				return;
+			}
 		}
 		
 		// find the files we need to submit

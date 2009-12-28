@@ -11,5 +11,6 @@ $config['site_url_for_trackback'] = false;
 $config['enable_chmod'] = true;
 $config['backend_intermediary'] = 'json';
 $config['enable_browse_shared'] = isset ($_SERVER['PHP_AUTH_USER']);
+$config['enable_reprocess_any'] = isset ($_SERVER['PHP_AUTH_USER']);
 
 ?>

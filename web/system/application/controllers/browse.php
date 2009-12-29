@@ -167,7 +167,7 @@ class Browse extends Controller {
   a.genotype genotype,
   a.zygosity zygosity,
   if(humans.global_id is null or humans.global_id='',concat(?,humans.id),humans.global_id) global_human_id,
-  if(humans.name is null,username,humans.name) name
+  if(humans.name is null,'',humans.name) name
  from genotypes.allsnps a
  left join files on kind='out/readme' and path like concat('%/',a.job,'%')
  left join jobs on jobs.id=files.job and jobs.public >= $public_min

@@ -172,6 +172,7 @@ def main():
 		fi
 		python '%(script_dir)s'/gff2json.py '%(ns_gff)s' > ns.json.tmp
 		mv ns.json.tmp ns.json
+		python '%(script_dir)s'/json_allele_frequency_query.py ns.json --in-place
 
 		python '%(script_dir)s'/gff_snpedia_map.py '%(2)s' > snpedia.json.tmp
 		mv snpedia.json.tmp snpedia.json

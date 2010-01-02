@@ -147,7 +147,7 @@ class Browse extends Controller {
     if (ereg ('noannotation', $filters) && "slow query" == "allowed")
     {
       // TODO: make this query execute in a reasonable time
-      $left_join_a2 = "left join genotypes.allsnps a2 on a2.module <> 'ns' and a.chromosome=a2.chromosome and a.coordinates=a2.coordinates";
+      $left_join_a2 = "left join genotypes.allsnps a2 on a2.job=a.job AND a2.module <> 'ns' AND a2.chromosome=a.chromosome AND a2.coordinates=a.coordinates";
       $and_a2_gene_is_null = "and a2.gene is null";
     }
 
@@ -168,7 +168,7 @@ class Browse extends Controller {
   a.zygosity zygosity,
   if(humans.global_id is null or humans.global_id='',concat(?,humans.id),humans.global_id) global_human_id,
   if(humans.name is null,'',humans.name) name,
-  a.taf taf
+  a.maf maf
  from genotypes.allsnps a
  left join files on kind='out/readme' and path like concat('%/',a.job,'%')
  left join jobs on jobs.id=files.job and jobs.public >= $public_min
@@ -240,7 +240,8 @@ class Browse extends Controller {
 			$row->job_id,
 			$row->global_human_id,
 			$row->name,
-			ereg ("^{", $row->taf) ? $row->taf : "");
+			$row->maf,
+			ereg ("^{", $row->maf) ? $row->maf : "");
     }
     if (!$skipthis)
       print $outq;

@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS `%(table)s` (
   `reference` text NOT NULL,
   `taf` varchar(255) default NULL,
   `maf` varchar(255) default NULL,
-  PRIMARY KEY (`module`,`chromosome`(5),`coordinates`,`gene`,`amino_acid_change`(32),`phenotype`(112),`reference`(112))
+  PRIMARY KEY (`module`,`chromosome`(5),`coordinates`,`gene`,`amino_acid_change`(32),`phenotype`(112),`reference`(112)),
+  INDEX (`module`, `gene`, `chromosome`, `coordinates`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8
 '''
 

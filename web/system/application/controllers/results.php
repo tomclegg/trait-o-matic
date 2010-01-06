@@ -523,7 +523,8 @@ class Results extends Controller {
 		if ($this->config->item('enable_pharmgkb'))
 			$data['phenotypes']['pharmgkb'] = $this->_load_output_data('pharmgkb', $job_id, $job_dir);
 		$data['phenotypes']['morbid'] = $this->_load_output_data('morbid', $job_id, $job_dir);
-		$data['phenotypes']['get-evidence'] = $this->_load_output_data('get-evidence', $job_id, $job_dir);
+		if ($this->config->item('enable_get_evidence'))
+			$data['phenotypes']['get-evidence'] = $this->_load_output_data('get-evidence', $job_id, $job_dir);
 
 		if ($this->config->item('enable_warehouse_storage'))
 		{

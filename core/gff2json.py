@@ -29,12 +29,23 @@ def main():
 		while len(alleles) > 1 and alleles[0].upper() == alleles[1].upper():
 			alleles.pop(0)
 
+		trait_allele = None;
+
 		# determine zygosity
 		if len(alleles) == 1:
 			zygosity = "hom"
+			trait_allele = alleles[0]
 		else:
 			zygosity = "het"
-		
+
+		genotype = "/".join(alleles)
+		if ref_allele in alleles:
+			leftover_alleles = copy(alleles)
+			leftover_alleles.remove(ref_allele)
+			genotype = ref_allele + "/" + "/".join(leftover_alleles)
+			if not trait_allele and len(leftover_alleles) == 1:
+				trait_allele = leftover_alleles[0]
+
 		# examine each amino acid change
 		amino_acid_changes = record.attributes["amino_acid"].strip("\"").split("/")
 		for a in amino_acid_changes:
@@ -53,12 +64,6 @@ def main():
 				else:
 					coordinates = str(record.start) + "-" + str(record.end)
 
-				genotype = "/".join(alleles)
-				if ref_allele in alleles:
-					leftover_alleles = copy(alleles)
-					leftover_alleles.remove(ref_allele)
-					genotype = ref_allele + "/" + "/".join(leftover_alleles)
-
 				output = {
 					"chromosome": record.seqname,
 					"coordinates": coordinates,
@@ -66,6 +71,7 @@ def main():
 					"amino_acid_change": amino_acid_change_and_position,
 					"genotype": genotype,
 					"ref_allele": ref_allele,
+					"trait_allele": trait_allele,
 					"zygosity": zygosity,
 					"variant": str(record),
 				}

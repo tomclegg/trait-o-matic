@@ -18,7 +18,7 @@ from utils.biopython_utils import reverse_complement
 from config import DB_HOST, DB_READ_USER, DB_READ_PASSWD, DB_READ_DATABASE
 
 query = '''
-SELECT strand, pop, ref_allele, ref_allele_freq, oth_allele, oth_allele_freq FROM hapmap27 WHERE
+SELECT strand, pop, ref_allele, ref_allele_freq, oth_allele, oth_allele_freq, ref_allele_count, oth_allele_count FROM hapmap27 WHERE
 chr=%s AND start=%s AND end=%s;
 '''
 
@@ -68,15 +68,18 @@ def main():
 			l["maf"] = dict(zip([d[1] for d in data], [float(min(d[3], d[5])) for d in data]))
 			# output trait allele frequency as a dictionary; this one is a little trickier
 			if "trait_allele" in l:
-				l["taf"] = dict()
+				l["taf"] = {"all_n": 0,
+					    "all_d": 0}
 				for d in data:
 					if d[0] == "+" and l["trait_allele"] == d[2] \
 					  or d[0] == "-" and l["trait_allele"] == reverse_complement(d[2]):
 						l["taf"][d[1]] = float(d[3])
+						l["taf"]["all_n"] += d[6]
 					elif d[0] == "+" and l["trait_allele"] == d[4] \
 					  or d[0] == "-" and l["trait_allele"] == reverse_complement(d[4]):
 						l["taf"][d[1]] = float(d[5])
-		
+						l["taf"]["all_n"] += d[7]
+					l["taf"]["all_d"] += d[6]+d[7]
 		print json.dumps(l)
 	
 	# close database cursor and connection

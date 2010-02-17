@@ -24,7 +24,7 @@ header("Pragma: no-cache");
 	<meta name="viewport" content="user-scalable=no,width=device-width">
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/prototype/1.6.1/prototype.js"></script>
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/scriptaculous/1.8.3/effects.js"></script>
-	<script type="text/javascript" src="/scripts/glider.js"></script>
+<!--	<script type="text/javascript" src="/scripts/glider.js"></script> -->
 	<script type="text/javascript" src="/scripts/index.js"></script>
 	<script type="text/javascript" src="/scripts/genes.js"></script>
 	<script type="text/javascript" src="/scripts/sortable.js"></script>

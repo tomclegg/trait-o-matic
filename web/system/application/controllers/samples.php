@@ -26,8 +26,30 @@ class Samples extends Controller {
 			$data['samples'][] = $result;
 			
 		}
-		sort($data['samples']);
+		usort($data['samples'], array ("Samples", "_sort"));
 		
 		$this->load->view('samples', $data);
+	}
+
+	static function _compare ($a, $b)
+	{
+		if ($a < $b) return -1;
+		if ($a > $b) return 1;
+		return 0;
+	}
+
+	static function _sort($a, $b)
+	{
+		if ($cmp = ((!$a['human'] || !isset($a['human']['name'])) -
+			    (!$b['human'] || !isset($b['human']['name']))))
+			return $cmp;
+		if ($cmp = Samples::_compare($a['extra'], $b['extra']))
+			return $cmp;
+		if (isset ($a['human']['name']) &&
+		    isset ($b['human']['name']) &&
+		    ($cmp = _compare($a['human']['name'],
+				     $b['human']['name'])))
+			return $cmp;
+		return 0;
 	}
 }

@@ -47,8 +47,8 @@ class Samples extends Controller {
 			return $cmp;
 		if (isset ($a['human']['name']) &&
 		    isset ($b['human']['name']) &&
-		    ($cmp = _compare($a['human']['name'],
-				     $b['human']['name'])))
+		    ($cmp = self::_compare($a['human']['name'],
+					   $b['human']['name'])))
 			return $cmp;
 		return 0;
 	}

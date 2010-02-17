@@ -14,21 +14,27 @@ rm -f get-evidence-sql.fifo
 mkfifo get-evidence-sql.fifo
 cat >get-evidence-sql.fifo <<EOF &
 
-CREATE TABLE IF NOT EXISTS latest_tmp (
+CREATE TEMPORARY TABLE latest_tmp (
  gene VARCHAR(32),
  aa_change VARCHAR(16),
- inheritance ENUM('unknown','dominant','recessive'),
- impact ENUM('unknown','pathogenic','putative pathogenic','benign','putative benign'),
+ inheritance ENUM('unknown','dominant','recessive','other','undefined'),
+ impact ENUM('unknown','pathogenic','likely pathogenic','benign','likely benign','protective','likely protective','pharmacogenetic','likely pharmacogenetic','none'),
+ dbsnp_id VARCHAR(16),
+ overall_frequency_n INT UNSIGNED,
+ overall_frequency_d INT UNSIGNED,
+ overall_frequency_f FLOAT,
+ gwas_max_or FLOAT,
+ genome_hits INT UNSIGNED,
+ web_hits INT UNSIGNED,
  summary_short TEXT,
  UNIQUE KEY (gene, aa_change)
 );
-LOCK TABLES latest_tmp WRITE;
-DELETE FROM latest_tmp;
-LOAD DATA LOCAL INFILE '$DATA/get-evidence-data.fifo' INTO TABLE \`latest_tmp\` FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';
-UNLOCK TABLES;
 
+LOAD DATA LOCAL INFILE '$DATA/get-evidence-data.fifo' INTO TABLE \`latest_tmp\` FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';
+
+DROP TABLE IF EXISTS latest;
 CREATE TABLE IF NOT EXISTS latest LIKE latest_tmp;
-LOCK TABLES latest_tmp READ, latest WRITE;
+LOCK TABLES latest WRITE;
 DELETE FROM latest;
 INSERT INTO latest SELECT * FROM latest_tmp;
 UNLOCK TABLES;

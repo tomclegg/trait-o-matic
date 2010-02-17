@@ -43,6 +43,9 @@ class Samples extends Controller {
 		if ($cmp = ((!$a['human'] || !isset($a['human']['name'])) -
 			    (!$b['human'] || !isset($b['human']['name']))))
 			return $cmp;
+		if ($cmp = Samples::_compare($a['job']['label'],
+					     $b['job']['label']))
+			return $cmp;
 		if ($cmp = Samples::_compare($a['extra'], $b['extra']))
 			return $cmp;
 		if (isset ($a['human']['name']) &&

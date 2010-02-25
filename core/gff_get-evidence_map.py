@@ -23,7 +23,7 @@ query = '''
 SELECT inheritance, impact, summary_short
 FROM latest
 WHERE gene=%s AND aa_change=%s
- AND impact NOT IN ('benign', 'likely benign', 'none')
+ AND impact NOT IN ('unknown', 'none', 'not reviewed')
  AND LENGTH(summary_short) > 0
 '''
 
@@ -96,9 +96,17 @@ def main():
 
 		if cursor.rowcount > 0:
 			for d in data:
-				dominance = d[0]
+				inheritance = d[0]
 				impact = d[1]
-				notes = d[2]
+				notes = d[2] + " ("
+				if impact == "not reviewed" or impact == "none" or impact == "unknown":
+					notes = notes + "impact not reviewed"
+				else:
+					notes = notes + impact
+				if inheritance == "dominant" or inheritance == "recessive":
+					notes = notes + ", " + inheritance + ")"
+				else:
+					notes = notes + ", inheritance pattern " + inheritance + ")"
 
 				# format for output
 				if record.start == record.end:

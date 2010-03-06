@@ -181,6 +181,7 @@ def main():
 		do
 			python '%(script_dir)s'/gff_${filter}_map.py '%(2)s' > ${filter}.json.tmp
 			mv ${filter}.json.tmp ${filter}.json
+			python '%(script_dir)s'/json_allele_frequency_query.py "$filter.json" --in-place
 			jsons="$jsons %(output_dir)s/${filter}.json"
 		done
 

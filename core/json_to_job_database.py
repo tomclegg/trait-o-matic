@@ -82,7 +82,7 @@ def main():
 			continue
 
 		for x in ("chromosome", "coordinates", "gene", "amino_acid_change", "phenotype", "reference"):
-			if not (x in l):
+			if not (x in l) or l[x] == None:
 				l[x] = ''
 
 		for x in ("genotype", "ref_allele", "trait_allele", "zygosity", "variant", "taf", "maf"):

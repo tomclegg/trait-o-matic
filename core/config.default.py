@@ -33,6 +33,10 @@ GETEVIDENCE_USER = "updater"
 GETEVIDENCE_PASSWD = "shakespeare"
 GETEVIDENCE_DATABASE = "get_evidence"
 
+HUGENET_USER = "updater"
+HUGENET_PASSWD = "shakespeare"
+HUGENET_DATABASE = "hugenet"
+
 GENOTYPE_USER = "updater"
 GENOTYPE_PASSWD = "shakespeare"
 GENOTYPE_DATABASE = "genotypes"

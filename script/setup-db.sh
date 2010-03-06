@@ -48,6 +48,15 @@ else
     pwprompt
     cat $SCRIPT_DIR/setup-db-users.sql | grep get_evidence | sed -e 's/shakespeare/$ENV{"dbpass"}/g' | mysql -uroot -p -f
   fi
+
+  if ! mysql -uinstaller -p"$dbpass" <<"  EOF" hugenet >/dev/null
+  select now()
+  EOF
+  then
+    # no "get_evidence" db -- fix
+    pwprompt
+    cat $SCRIPT_DIR/setup-db-users.sql | grep hugenet | sed -e 's/shakespeare/$ENV{"dbpass"}/g' | mysql -uroot -p -f
+  fi
 fi
 
 cat $SCRIPT_DIR/setup-db-permissions.sql | sed -e 's/shakespeare/$ENV{"dbpass"}/g' | mysql -uinstaller -p"$dbpass"

@@ -148,6 +148,7 @@ def main():
 		         '1': os.path.join(output_dir, "genotype.gff"),
 		         '2': os.path.join(output_dir, "genotype.dbsnp.gff"),
 		         'ns_gff': os.path.join(output_dir, "ns.gff"),
+			 'dbsnp_filters': "snpedia hugenetgwas",
 			 'ns_filters': "omim hgmd morbid pharmgkb get-evidence",
 			 'script_dir': script_dir,
 			 'output_dir': output_dir,
@@ -174,20 +175,25 @@ def main():
 		mv ns.json.tmp ns.json
 		python '%(script_dir)s'/json_allele_frequency_query.py ns.json --in-place
 
-		python '%(script_dir)s'/gff_snpedia_map.py '%(2)s' > snpedia.json.tmp
-		mv snpedia.json.tmp snpedia.json
-		jsons='%(output_dir)s'/snpedia.json
+		jsons=""
+
+		for filter in %(dbsnp_filters)s
+		do
+			python '%(script_dir)s'/gff_${filter}_map.py '%(2)s' > ${filter}.json.tmp
+			mv ${filter}.json.tmp ${filter}.json
+			jsons="$jsons %(output_dir)s/${filter}.json"
+		done
 
 		for filter in %(ns_filters)s
 		do
 			python '%(script_dir)s'/gff_${filter}_map.py '%(ns_gff)s' > "$filter.json.tmp"
 			mv "$filter.json.tmp" "$filter.json"
 			python '%(script_dir)s'/json_allele_frequency_query.py "$filter.json" --in-place
-			jsons="$jsons %(output_dir)s/$filter.json"
+			jsons="$jsons %(output_dir)s/${filter}.json"
 		done
 		python '%(script_dir)s'/json_to_job_database.py --drop-tables $jsons '%(output_dir)s'/ns.json
 		touch README
-		for filter in %(ns_filters)s snpedia ns
+		for filter in %(ns_filters)s %(dbsnp_filters)s ns
 		do
 			python '%(Z)s' -t '%(url)s' '%(output_dir)s'/$filter.json out/$filter '%(token)s'
 		done

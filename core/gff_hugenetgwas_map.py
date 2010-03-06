@@ -13,7 +13,12 @@ import MySQLdb, MySQLdb.cursors
 import simplejson as json
 from utils import gff
 from utils.biopython_utils import reverse_complement
+from utils.bitset import *
 from config import DB_HOST, HUGENET_USER, HUGENET_PASSWD, HUGENET_DATABASE
+
+location_query = '''
+SELECT chrom, chromStart, chromEnd FROM hugenet_gwas LEFT JOIN caliban.snp129 dbsnp ON dbsnp.name = hugenet_gwas.rsid WHERE chrom IS NOT NULL LIMIT %s,10000;
+'''
 
 query = '''
 SELECT
@@ -36,15 +41,44 @@ def main():
 	
 	# first, try to connect to the databases
 	try:
+		location_connection = MySQLdb.connect(host=DB_HOST, user=HUGENET_USER, passwd=HUGENET_PASSWD, db=HUGENET_DATABASE)
+		location_cursor = location_connection.cursor()
 		connection = MySQLdb.connect(host=DB_HOST, user=HUGENET_USER, passwd=HUGENET_PASSWD, db=HUGENET_DATABASE)
 		cursor = connection.cursor()
 	except MySQLdb.OperationalError, message:
 		print "Error %d while connecting to database: %s" % (message[0], message[1])
 		sys.exit()
 	
+	# build a dictionary of bitsets from the database (partly based on utility code from bx-python)
+	start_record = 0
+	last_chromosome = None
+	last_bitset = None
+	bitsets = dict()
+	# do this in 10,000 chunks
+	while True:
+		location_cursor.execute(location_query, start_record)
+		previous_start_record = start_record
+		# go through what we retrieved
+		for datum in location_cursor:
+			start_record += 1
+			chromosome = datum[0]
+			if chromosome != last_chromosome:
+				if chromosome not in bitsets:
+					bitsets[chromosome] = BinnedBitSet(MAX)
+				last_chromosome = chromosome
+				last_bitset = bitsets[chromosome]
+			start, end = datum[1], datum[2]
+			last_bitset.set_range(start, end - start)
+		# stop if we're done
+		if previous_start_record == start_record:
+			break
+	
 	# doing this intersect operation speeds up our task significantly for full genomes
 	gff_file = gff.input(sys.argv[1])
-	for record in gff_file:
+	for line in gff_file.intersect(bitsets):
+		# the one drawback is that intersect() was implemented to return strings, so we
+		# need to parse it
+		record = gff.input([line]).next()
 		# lightly parse to find the alleles and rs number
 		alleles = record.attributes["alleles"].strip("\"").split("/")
 		ref_allele = record.attributes["ref_allele"].strip("\"")
@@ -138,6 +172,8 @@ def main():
 	# close database cursor and connection
 	cursor.close()
 	connection.close()
+	location_cursor.close()
+	location_connection.close()
 
 if __name__ == "__main__":
 	main()

@@ -23,7 +23,7 @@ query = '''
 SELECT inheritance, impact, summary_short
 FROM latest
 WHERE gene=%s AND aa_change=%s
- AND impact NOT IN ('unknown', 'none', 'not reviewed')
+ AND impact NOT IN ('unknown','none','not reviewed','benign','likely benign','uncertain benign')
  AND LENGTH(summary_short) > 0
 '''
 

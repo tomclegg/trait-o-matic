@@ -22,7 +22,7 @@ SELECT chrom, chromStart, chromEnd FROM hugenet_gwas LEFT JOIN caliban.snp129 db
 
 query = '''
 SELECT
- concat(trait,' (',firstauthor,' in ',journal,' ',published_year,if(or_or_beta_is_or='Y',concat(', OR=',or_or_beta_ci),''),')'),
+ concat(trait,' (',firstauthor,' in ',journal,' ',published_year,') - ',risk_allele_prevalence,if(or_or_beta_is_or='Y',concat(', OR=',or_or_beta_ci),'')),
  pubmed_id,
  substring(substring_index(risk_allele_prevalence,concat(rsid,'-'),-1),1,1) risk_allele,
  strand

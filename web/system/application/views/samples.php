@@ -14,7 +14,7 @@ foreach(array_chunk($samples, 5) as $samples_section):
 					<div class="section">
 <?php
 foreach($samples_section as $s):
-$url = '/results/job/'.$s['job']['id'].'/'.rawurlencode(ereg_replace(" ", "_", $s['name']));
+$url = '/results/job/'.$s['job']['id'].'/'.rawurlencode(ereg_replace("[^-a-zA-Z0-9\\.]", "_", $s['name']));
 ?>
 						<p class="link"><a href="<?php echo htmlspecialchars($url); ?>"><img src="<?php echo $s['image']; ?>" width="100" height="100" alt=""><br><?php echo $s['htmllabel']; ?></a></p>
 <?php

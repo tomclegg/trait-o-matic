@@ -20,6 +20,7 @@ CREATE TEMPORARY TABLE latest_tmp (
  aa_change_short VARCHAR(16),
  inheritance ENUM('unknown','dominant','recessive','other','undefined'),
  impact VARCHAR(32),
+ qualified_impact VARCHAR(48),
  dbsnp_id VARCHAR(16),
  overall_frequency_n INT UNSIGNED,
  overall_frequency_d INT UNSIGNED,
@@ -27,7 +28,7 @@ CREATE TEMPORARY TABLE latest_tmp (
  gwas_max_or FLOAT,
  genome_hits INT UNSIGNED,
  web_hits INT UNSIGNED,
- certainty TINYINT UNSIGNED,
+ certainty CHAR(2),
  summary_short TEXT,
  UNIQUE KEY (gene, aa_change)
 );
@@ -56,7 +57,7 @@ for (split "\t") {
   $fieldpos{$_} = $i;
   ++$i;
 }
-@fieldlist = map { exists $fieldpos{$_} ? $fieldpos{$_} : -1 } qw(gene aa_change aa_change_short inheritance impact dbsnp_id overall_frequency_n overall_frequency_d overall_frequency max_or_or n_genomes n_web_hits certainty summary_short);
+@fieldlist = map { exists $fieldpos{$_} ? $fieldpos{$_} : -1 } qw(gene aa_change aa_change_short inheritance impact qualified_impact dbsnp_id overall_frequency_n overall_frequency_d overall_frequency max_or_or n_genomes n_web_hits certainty summary_short);
 while (<>) {
   chomp;
   @F = split "\t";

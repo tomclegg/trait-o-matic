@@ -7,10 +7,4 @@ Memory: 256MB
 
 * Installation
 
-** Create user
-** As the new user:
-*** git clone git://github.com/xwu/trait-o-matic.git
-*** cd trait-o-matic/script
-*** ./install-root.sh # requires sudo ability
-*** ./install-user.sh
-*** reboot, or sudo /etc/init.d/trait.sh start
+See http://snp.med.harvard.edu/docs/install

@@ -55,6 +55,27 @@ if [ ! -f dbSNP.stamp ]; then
   $WGET ftp://ftp.ncbi.nih.gov:21/snp/organisms/human_9606/database/organism_data/b129/b129_SNPChrPosOnRef_36_3.bcp.gz
   touch dbSNP.stamp
 fi
+
+# HuGENet GWAS
+if [ ! -f HuGENet.stamp ]; then
+  if ! ls GWAS_Hit_*.csv >/dev/null 2>/dev/null; then
+     try_whget /Trait-o-matic/data/HuGENet .
+  fi
+  csv="`ls -rt GWAS_Hit_*.csv | tail -n1`"
+  if [ "$csv" = "" ]; then
+    echo >&2 <<EOF
+
+Could not download HuGENet csv from warehouse.  Open
+http://hugenavigator.net/ , then click "GWAS Integrator", then click
+the "All" button, then click "Download" on the results page.  Copy the
+downloaded file (GWAS_Hit_mm-dd-yyyy.csv) to $DATA/.
+Then restart the installer.
+EOF
+    exit 1
+  fi
+  python $CORE/import_hugenetgwas.py "$csv"
+  touch HuGENet.stamp
+fi
  
 # HapMap (quick version)
 if [ ! -f hapmap.stamp ] \

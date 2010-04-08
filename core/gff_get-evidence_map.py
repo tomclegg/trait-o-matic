@@ -39,7 +39,14 @@ def main():
 		connection = MySQLdb.connect(host=DB_HOST, user=GETEVIDENCE_USER, passwd=GETEVIDENCE_PASSWD, db=GETEVIDENCE_DATABASE)
 		cursor = connection.cursor()
 	except MySQLdb.OperationalError, message:
-		print "Error %d while connecting to database: %s" % (message[0], message[1])
+		sys.stderr.write ("Error %d while connecting to database: %s" % (message[0], message[1]))
+		sys.exit()
+	
+	# make sure the required table is really there
+	try:
+		cursor.execute ('DESCRIBE latest')
+	except MySQLdb.OperationalError:
+		sys.stderr.write ("No 'latest' table => empty output")
 		sys.exit()
 	
 	# doing this intersect operation speeds up our task significantly for full genomes

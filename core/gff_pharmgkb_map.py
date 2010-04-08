@@ -43,7 +43,14 @@ def main():
 		connection = MySQLdb.connect(host=DB_HOST, user=PHARMGKB_USER, passwd=PHARMGKB_PASSWD, db=PHARMGKB_DATABASE)
 		cursor = connection.cursor()
 	except MySQLdb.OperationalError, message:
-		print "Error %d while connecting to database: %s" % (message[0], message[1])
+		sys.stderr.write ("Error %d while connecting to database: %s" % (message[0], message[1]))
+		sys.exit()
+	
+	# make sure the required table is really there
+	try:
+		cursor.execute ('DESCRIBE pharmgkb')
+	except MySQLdb.OperationalError:
+		sys.stderr.write ("No pharmgkb table => empty output")
 		sys.exit()
 	
 	# doing this intersect operation speeds up our task significantly for full genomes

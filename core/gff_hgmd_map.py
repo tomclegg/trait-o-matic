@@ -84,7 +84,14 @@ def main():
 		connection = MySQLdb.connect(host=DB_HOST, user=HGMD_USER, passwd=HGMD_PASSWD, db=HGMD_DATABASE)
 		cursor = connection.cursor()
 	except MySQLdb.OperationalError, message:
-		print "Error %d while connecting to database: %s" % (message[0], message[1])
+		sys.stderr.write ("Error %d while connecting to database: %s" % (message[0], message[1]))
+		sys.exit()
+	
+	# make sure the required table is really there
+	try:
+		cursor.execute ('DESCRIBE mutation')
+	except MySQLdb.OperationalError:
+		sys.stderr.write ("No mutation table => empty output")
 		sys.exit()
 	
 	gff_file = gff.input(sys.argv[1])	

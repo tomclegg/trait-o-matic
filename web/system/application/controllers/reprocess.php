@@ -54,6 +54,10 @@ class Reprocess extends Controller {
 			return;
 		}
 		$trackback_url = site_url("query/trackback/{$job}");
+		if ($this->config->item('site_url_for_trackback'))
+		{
+			$trackback_url = $this->config->item('site_url_for_trackback') . "/query/trackback/{$job}";
+		}
 		$request_token_file = $this->file->get(array('kind' => 'request token', 'job' => $job), 1);
 		$request_token_path = $request_token_file ? $request_token_file['path'] : '';
 		if ($request_token_path == '')

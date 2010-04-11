@@ -45,7 +45,7 @@ def main():
 	# make sure the required table is really there
 	try:
 		cursor.execute ('DESCRIBE latest')
-	except MySQLdb.OperationalError:
+	except MySQLdb.Error:
 		sys.stderr.write ("No 'latest' table => empty output")
 		sys.exit()
 	

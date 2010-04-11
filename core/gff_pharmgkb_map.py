@@ -49,7 +49,7 @@ def main():
 	# make sure the required table is really there
 	try:
 		cursor.execute ('DESCRIBE pharmgkb')
-	except MySQLdb.OperationalError:
+	except MySQLdb.Error:
 		sys.stderr.write ("No pharmgkb table => empty output")
 		sys.exit()
 	

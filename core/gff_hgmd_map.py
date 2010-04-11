@@ -90,7 +90,7 @@ def main():
 	# make sure the required table is really there
 	try:
 		cursor.execute ('DESCRIBE mutation')
-	except MySQLdb.OperationalError:
+	except MySQLdb.Error:
 		sys.stderr.write ("No mutation table => empty output")
 		sys.exit()
 	

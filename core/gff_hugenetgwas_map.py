@@ -46,9 +46,16 @@ def main():
 		connection = MySQLdb.connect(host=DB_HOST, user=HUGENET_USER, passwd=HUGENET_PASSWD, db=HUGENET_DATABASE)
 		cursor = connection.cursor()
 	except MySQLdb.OperationalError, message:
-		print "Error %d while connecting to database: %s" % (message[0], message[1])
+		sys.stderr.write ("Error %d while connecting to database: %s" % (message[0], message[1]))
 		sys.exit()
 	
+	# make sure the required table is really there
+	try:
+		cursor.execute ('DESCRIBE hugenet_gwas')
+	except MySQLdb.Error:
+		sys.stderr.write ("No 'hugenet_gwas' table => empty output")
+		sys.exit()
+
 	# build a dictionary of bitsets from the database (partly based on utility code from bx-python)
 	start_record = 0
 	last_chromosome = None

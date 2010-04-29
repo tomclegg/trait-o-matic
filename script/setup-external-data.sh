@@ -60,6 +60,7 @@ fi
 if [ ! -f HuGENet.stamp ]; then
   if ! ls GWAS_Hit_*.csv >/dev/null 2>/dev/null; then
      try_whget /Trait-o-matic/data/HuGENet .
+     try_whget /Trait-o-matic/data/HuGENet . || true
   fi
   csv="`ls -rt GWAS_Hit_*.csv | tail -n1`"
   if [ "$csv" = "" ]; then

@@ -58,18 +58,17 @@ fi
 
 # HuGENet GWAS
 if [ ! -f HuGENet.stamp ]; then
-  if ! ls GWAS_Hit_*.csv >/dev/null 2>/dev/null; then
-     try_whget /Trait-o-matic/data/HuGENet .
+  if ! ls GWAS_Hit_*.txt >/dev/null 2>/dev/null; then
      try_whget /Trait-o-matic/data/HuGENet . || true
   fi
-  csv="`ls -rt GWAS_Hit_*.csv | tail -n1`"
+  csv="`ls -rt GWAS_Hit_*.txt | tail -n1`" || true
   if [ "$csv" = "" ]; then
     echo >&2 <<EOF
 
 Could not download HuGENet csv from warehouse.  Open
 http://hugenavigator.net/ , then click "GWAS Integrator", then click
 the "All" button, then click "Download" on the results page.  Copy the
-downloaded file (GWAS_Hit_mm-dd-yyyy.csv) to $DATA/.
+downloaded file (GWAS_Hit_mm-dd-yyyy.txt) to $DATA/.
 Then restart the installer.
 EOF
     exit 1

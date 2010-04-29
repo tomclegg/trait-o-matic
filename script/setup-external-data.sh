@@ -145,7 +145,7 @@ sed 's/ (None)//' < snpedia.txt \
  | awk 'BEGIN { FS = "\t" }; ($5 !~ /(^normal)|(^\?)/ || $5 ~ /;/)' \
  > snpedia.filtered.txt
 python $CORE/snpedia_print_genotypes.py snpedia.filtered.txt > snpedia.tsv.tmp
-[ -s snpedia.tsv.tmp ]
+[ -s snpedia.tsv.tmp ] || echo "snpedia.tsv.tmp is zero size -- something went wrong."
 mv snpedia.tsv.tmp snpedia.tsv
 
 echo Loading morbidmap, omim, refFlat, snpedia, dbSNP data into MySQL

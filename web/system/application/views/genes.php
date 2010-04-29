@@ -29,8 +29,6 @@ require ('top.php');
 						<div class="wrapper">
 							<p><label class="label">Genotype<br>
 							<input type="file" class="file" name="genotype" id="genotype"></label></p>
-							<p><label class="label">Coverage<span class="description"> (optional)</span><br>
-							<input type="file" class="file" name="coverage" id="coverage"></label></p>
 						</div>
 						<p class="submit"><span class="label"></span><input type="submit" name="submit-gene-form" id="submit-gene-form" value="Next &raquo;"></p>
 					</form>

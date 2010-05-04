@@ -25,6 +25,11 @@ def main():
 
 		rsid, chromosome, position, genotype = fields
 
+		# We don't currently know how to handle either insertions/deletions
+		# or "D" alleles, so ignore those for now.
+		if genotype in ("II", "--", "DD", "DI"):
+			continue
+
 		# Mitochondrial DNA -- 23andme uses "MT", trait-o-matic expects "chrM"
 		if chromosome == "MT":
 			chromosome = "M"

@@ -18,9 +18,10 @@ CREATE TEMPORARY TABLE latest_tmp (
  gene VARCHAR(32),
  aa_change VARCHAR(16),
  aa_change_short VARCHAR(16),
+ rsid INT UNSIGNED,
  inheritance ENUM('unknown','dominant','recessive','other','undefined'),
  impact VARCHAR(32),
- qualified_impact VARCHAR(48),
+ qualified_impact VARCHAR(64),
  dbsnp_id VARCHAR(16),
  overall_frequency_n INT UNSIGNED,
  overall_frequency_d INT UNSIGNED,
@@ -30,7 +31,8 @@ CREATE TEMPORARY TABLE latest_tmp (
  web_hits INT UNSIGNED,
  certainty CHAR(2),
  summary_short TEXT,
- UNIQUE KEY (gene, aa_change)
+ KEY (gene, aa_change),
+ KEY (rsid)
 );
 
 LOAD DATA LOCAL INFILE '$DATA/get-evidence-data.fifo' INTO TABLE \`latest_tmp\` FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n';
@@ -57,7 +59,7 @@ for (split "\t") {
   $fieldpos{$_} = $i;
   ++$i;
 }
-@fieldlist = map { exists $fieldpos{$_} ? $fieldpos{$_} : -1 } qw(gene aa_change aa_change_short inheritance impact qualified_impact dbsnp_id overall_frequency_n overall_frequency_d overall_frequency max_or_or n_genomes n_web_hits certainty summary_short);
+@fieldlist = map { exists $fieldpos{$_} ? $fieldpos{$_} : -1 } qw(gene aa_change aa_change_short rsid inheritance impact qualified_impact dbsnp_id overall_frequency_n overall_frequency_d overall_frequency max_or_or n_genomes n_web_hits certainty summary_short);
 while (<>) {
   chomp;
   @F = split "\t";
@@ -77,6 +79,10 @@ then
   host=evidence.personalgenomes.org
 else
   host=evidence.oxf.freelogy.org
+fi
+if [ ! -z "$GET_EVIDENCE_HOST" ]
+then
+  host="$GET_EVIDENCE_HOST"
 fi
 
 wget -O- http://$host/download/latest/flat/latest-flat.tsv | tee get-evidence-latest-flat.tsv | perl get-evidence-preprocess.pl > get-evidence-data.fifo &

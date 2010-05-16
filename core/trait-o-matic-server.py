@@ -146,10 +146,10 @@ def main():
 		         'url': trackback_url,
 		         'token': request_token,
 		         '1': os.path.join(output_dir, "genotype.gff"),
-		         '2': os.path.join(output_dir, "genotype.dbsnp.gff"),
+		         'dbsnp_gff': os.path.join(output_dir, "genotype.dbsnp.gff"),
 		         'ns_gff': os.path.join(output_dir, "ns.gff"),
 			 'dbsnp_filters': "snpedia hugenetgwas",
-			 'ns_filters': "omim hgmd morbid pharmgkb get-evidence",
+			 'ns_filters': "omim hgmd morbid pharmgkb",
 			 'script_dir': script_dir,
 			 'output_dir': output_dir,
 			 'lockfile': os.path.join(output_dir, "lock"),
@@ -165,10 +165,10 @@ def main():
 			%(fetch)s '%(in)s' | gzip -cdf | python '%(A)s' '%(reference)s' /dev/stdin | egrep 'ref_allele [ACGTN]' > '%(1)s'.tmp
 			mv '%(1)s'.tmp '%(1)s'
 
-			python '%(B)s' '%(1)s' > '%(2)s'.tmp
-			mv '%(2)s'.tmp '%(2)s'
+			python '%(B)s' '%(1)s' > '%(dbsnp_gff)s'.tmp
+			mv '%(dbsnp_gff)s'.tmp '%(dbsnp_gff)s'
 
-			python '%(C)s' '%(2)s' '%(reference)s' > '%(ns_gff)s'.tmp
+			python '%(C)s' '%(dbsnp_gff)s' '%(reference)s' > '%(ns_gff)s'.tmp
 			mv '%(ns_gff)s'.tmp '%(ns_gff)s'
 		fi
 		python '%(script_dir)s'/gff2json.py '%(ns_gff)s' > ns.json.tmp
@@ -179,7 +179,7 @@ def main():
 
 		for filter in %(dbsnp_filters)s
 		do
-			python '%(script_dir)s'/gff_${filter}_map.py '%(2)s' > ${filter}.json.tmp
+			python '%(script_dir)s'/gff_${filter}_map.py '%(dbsnp_gff)s' > ${filter}.json.tmp
 			mv ${filter}.json.tmp ${filter}.json
 			python '%(script_dir)s'/json_allele_frequency_query.py "$filter.json" --in-place
 			jsons="$jsons %(output_dir)s/${filter}.json"
@@ -192,9 +192,18 @@ def main():
 			python '%(script_dir)s'/json_allele_frequency_query.py "$filter.json" --in-place
 			jsons="$jsons %(output_dir)s/${filter}.json"
 		done
+
+		for filter in get-evidence
+		do
+			python '%(script_dir)s'/gff_${filter}_map.py '%(ns_gff)s' '%(dbsnp_gff)s' > "$filter.json.tmp"
+			mv "$filter.json.tmp" "$filter.json"
+			python '%(script_dir)s'/json_allele_frequency_query.py "$filter.json" --in-place
+			jsons="$jsons %(output_dir)s/${filter}.json"
+		done
+
 		python '%(script_dir)s'/json_to_job_database.py --drop-tables $jsons '%(output_dir)s'/ns.json
 		touch README
-		for filter in %(ns_filters)s %(dbsnp_filters)s ns
+		for filter in get-evidence %(ns_filters)s %(dbsnp_filters)s ns
 		do
 			python '%(Z)s' -t '%(url)s' '%(output_dir)s'/$filter.json out/$filter '%(token)s'
 		done

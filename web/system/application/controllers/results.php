@@ -394,6 +394,7 @@ class Results extends Controller {
 			$data = $this->_prep_results ($user, $public_min, $job['id']);
 			if (!$data)
 				return $this->_authenticate (TRUE);
+			$xref_sections = array ("omim", "snpedia", "hgmd", "pharmgkb", "morbid", "get-evidence", "hugenetgwas");
 			if ($what == "json") {
 				$filename = $user['username'];
 				if ($job['processed'])
@@ -402,7 +403,7 @@ class Results extends Controller {
 				header ("Content-type: text/json");
 				header ("Content-disposition: attachment; filename=\"{$filename}\"");
 				$data['variants'] = array();
-				foreach (array ("omim", "snpedia", "hgmd", "pharmgkb", "morbid", "get-evidence", "hugenetgwas") as $section) {
+				foreach ($xref_sections as $section) {
 				  if (array_key_exists ($section, $data['phenotypes'])) {
 				    foreach ($data['phenotypes'][$section] as $x) {
 				      $x['database'] = $section;
@@ -415,6 +416,17 @@ class Results extends Controller {
 			}
 			else
 			{
+				foreach ($data['phenotypes'] as $section => &$results) {
+					if (in_array ($section, $xref_sections)) {
+						$new_results = array();
+						foreach ($results as $r) {
+							if (!is_array ($r) || !array_key_exists ("display_flag", $r) || $r["display_flag"]) {
+								$new_results[] = $r;
+							}
+						}
+						$results = $new_results;
+					}
+				}
 				$this->load->view ('results', $data);
 			}
 			return;

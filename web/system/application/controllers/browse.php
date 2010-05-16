@@ -176,7 +176,7 @@ class Browse extends Controller {
  left join users on jobs.user=users.id
  left join humans on humans.id=jobs.human
  $left_join_a2
- where a.module = 'ns'
+ where (a.module = 'ns' or (a.module = 'get-evidence' and not (0 < length(a.amino_acid_change))))
    and users.id is not null
    $and_a2_gene_is_null
  order by a.gene, a.chromosome, a.coordinates",

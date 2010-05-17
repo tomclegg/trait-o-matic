@@ -221,10 +221,14 @@ def main():
 
 		# create the genotype string from the given alleles
 		#TODO: do something about the Y chromosome
+		trait_allele = None;
 		if len(alleles) == 1:
+			zygosity = "hom"
+			trait_allele = alleles[0]
 			alleles = (alleles[0], alleles[0])
 			genotype = alleles[0]
 		else:
+			zygosity = "het"
 			genotype = '/'.join(sorted(alleles))
 
 		if not (rs_number > 0) or rs_number in found_aa_for_rsid:
@@ -233,19 +237,29 @@ def main():
 		cursor.execute(query_rsid, rs_number)
 		data = cursor.fetchall()
 
+		if ref_allele in alleles:
+			leftover_alleles = copy(alleles)
+			leftover_alleles.remove(ref_allele)
+			genotype = ref_allele + "/" + "/".join(leftover_alleles)
+			if not trait_allele and len(leftover_alleles) == 1:
+				trait_allele = leftover_alleles[0]
+
 		if cursor.rowcount > 0:
 			for d in data:
 				inheritance = d[0]
 				impact = d[1]
-				notes = d[2] + " ("
-				if impact == "not reviewed" or impact == "none" or impact == "unknown":
-					notes = notes + "impact not reviewed"
+				if len(d[2]) > 0:
+					notes = d[2] + " ("
+					if impact == "not reviewed" or impact == "none" or impact == "unknown":
+						notes = notes + "impact not reviewed"
+					else:
+						notes = notes + impact
+					if inheritance == "dominant" or inheritance == "recessive":
+						notes = notes + ", " + inheritance + ")"
+					else:
+						notes = notes + ", inheritance pattern " + inheritance + ")"
 				else:
-					notes = notes + impact
-				if inheritance == "dominant" or inheritance == "recessive":
-					notes = notes + ", " + inheritance + ")"
-				else:
-					notes = notes + ", inheritance pattern " + inheritance + ")"
+					notes = ""
 				variant_name = d[3]
 				display_flag = d[4]
 
@@ -264,6 +278,9 @@ def main():
 					"variant": str(record),
 					"phenotype": notes,
 					"reference": reference,
+					"ref_allele": ref_allele,
+					"trait_allele": trait_allele,
+					"zygosity": zygosity,
 					"display_flag": display_flag
 				}
 				print json.dumps(output)

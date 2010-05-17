@@ -105,6 +105,9 @@ def main():
 		if "amino_acid" not in record.attributes:
 			continue
 
+		if rs_number > 0:
+			found_aa_for_rsid[rs_number] = 1
+
 		for gene_acid_base in record.attributes["amino_acid"].split("/"):
 
 			# get amino acid change
@@ -127,9 +130,6 @@ def main():
 				break
 
 		if cursor.rowcount > 0:
-
-			if rs_number > 0:
-				found_aa_for_rsid[rs_number] = 1
 
 			for d in data:
 				inheritance = d[0]

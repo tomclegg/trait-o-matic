@@ -225,7 +225,7 @@ def main():
 		if len(alleles) == 1:
 			zygosity = "hom"
 			trait_allele = alleles[0]
-			alleles = (alleles[0], alleles[0])
+			alleles = [alleles[0], alleles[0]]
 			genotype = alleles[0]
 		else:
 			zygosity = "het"

@@ -112,7 +112,7 @@ def main():
 		#TODO: do something about the Y chromosome
 		if len(alleles) == 1:
 			genotype = alleles[0]
-			alleles = (alleles[0], alleles[0])
+			alleles = [alleles[0], alleles[0]]
 		else:
 			genotype = ';'.join(sorted(alleles))
 		reverse_alleles = [reverse_complement(a) for a in alleles]

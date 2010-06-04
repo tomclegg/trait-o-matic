@@ -92,7 +92,7 @@ def main():
 		# create the genotype string from the given alleles
 		#TODO: do something about the Y chromosome
 		if len(alleles) == 1:
-			alleles = (alleles[0], alleles[0])
+			alleles = [alleles[0], alleles[0]]
 			genotype = alleles[0]
 		else:
 			genotype = '/'.join(sorted(alleles))

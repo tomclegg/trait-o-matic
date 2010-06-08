@@ -417,7 +417,8 @@ class Results extends Controller {
 			else
 			{
 				foreach ($data['phenotypes'] as $section => &$results) {
-					if (in_array ($section, $xref_sections)) {
+					if (is_array ($results) &&
+					    in_array ($section, $xref_sections)) {
 						$new_results = array();
 						foreach ($results as $r) {
 							if (!is_array ($r) || !array_key_exists ("display_flag", $r) || $r["display_flag"]) {

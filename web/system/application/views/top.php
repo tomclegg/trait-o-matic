@@ -42,7 +42,7 @@ if (!isset($asynchronous) || !$asynchronous):
 		<div id="menu">
 			<p>
 				<span class="description"><em>See also:</em></span>
-				<span class="link"><a href="https://trac.scalablecomputingexperts.com/wiki/Doc/Trait-o-matic">Project home</a></span>
+				<span class="link"><a href="https://trac.scalablecomputingexperts.com/wiki/Trait-o-matic">Project home</a></span>
 				<span class="bullet"> &nbsp;&bull;&nbsp; </span>
 				<span class="link"><a href="/docs/install">How to install</a></span>
 				<span class="bullet"> &nbsp;&bull;&nbsp; </span>

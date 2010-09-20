@@ -419,6 +419,7 @@ class Results extends Controller {
 				foreach ($data['phenotypes'] as $section => &$results) {
 					if (is_array ($results) &&
 					    in_array ($section, $xref_sections)) {
+						error_log ("pruning $section");
 						$new_results = array();
 						foreach ($results as $r) {
 							if (!is_array ($r) || !array_key_exists ("display_flag", $r) || $r["display_flag"]) {

@@ -38,11 +38,12 @@ CREATE TABLE IF NOT EXISTS `%(table)s` (
   `maf` varchar(255) default NULL,
   PRIMARY KEY (`module`,`chromosome`(5),`coordinates`,`gene`,`amino_acid_change`(32),`phenotype`(112),`reference`(112)),
   INDEX (`module`, `gene`, `chromosome`, `coordinates`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+ALTER TABLE `%(table)s` ADD `display_flag` tinyint default 1;
 '''
 
 fieldformat = '''
-chromosome=%(chromosome)s, coordinates=%(coordinates)s, module=%(module)s, genotype=%(genotype)s, ref_allele=%(ref_allele)s, trait_allele=%(trait_allele)s, gene=%(gene)s, amino_acid_change=%(amino_acid_change)s, zygosity=%(zygosity)s, variant=%(variant)s, phenotype=%(phenotype)s, reference=%(reference)s, taf=%(taf)s, maf=%(maf)s
+chromosome=%(chromosome)s, coordinates=%(coordinates)s, module=%(module)s, genotype=%(genotype)s, ref_allele=%(ref_allele)s, trait_allele=%(trait_allele)s, gene=%(gene)s, amino_acid_change=%(amino_acid_change)s, zygosity=%(zygosity)s, variant=%(variant)s, phenotype=%(phenotype)s, reference=%(reference)s, taf=%(taf)s, maf=%(maf)s, display_flag=%(display_flag)d
 '''
 
 def main():
@@ -89,6 +90,9 @@ def main():
 			if not (x in l):
 				l[x] = None
 
+		if not ("display_flag" in l):
+			l["display_flag"] = 1;
+
 		if fileinput.filename() != last_filename:
 			table_name = os.path.basename(os.path.dirname(fileinput.filename()))
 			table_name = re.sub("-.*", "", table_name)
@@ -111,6 +115,7 @@ def main():
 		l['maf'] = json.dumps(l['maf'])
 		l['module'] = module_name
 		l['job'] = table_name
+		l['display_flag'] = display_flag
 
 		cursor.execute("replace into `" + table_name + "` set " + fieldformat + ";", l);
 		cursor.execute("insert ignore into `allsnps` set job=%(job)s, " + fieldformat + ";", l);

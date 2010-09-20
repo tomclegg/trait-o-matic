@@ -2,6 +2,8 @@
 
 class Results extends Controller {
 
+	var $xref_sections = array ("omim", "snpedia", "hgmd", "pharmgkb", "morbid", "get-evidence", "hugenetgwas");
+
 	function Results()
 	{
 		parent::Controller();	
@@ -37,6 +39,7 @@ class Results extends Controller {
 		// show data
 		$this->user->get($user_details, 1);
 		$data = $this->_prep_results($this->user->get($user_details, 1), -1);
+		$this->_filter_results($data);
 		$this->load->view('results', $data);
 	}
 	
@@ -292,6 +295,7 @@ class Results extends Controller {
 		
 		// make sure to show only publicly released results
 		$data = $this->_prep_results($user, TRUE);
+		$this->_filter_results($data);
 		$this->load->view('results', $data);
 	}
 	
@@ -394,7 +398,6 @@ class Results extends Controller {
 			$data = $this->_prep_results ($user, $public_min, $job['id']);
 			if (!$data)
 				return $this->_authenticate (TRUE);
-			$xref_sections = array ("omim", "snpedia", "hgmd", "pharmgkb", "morbid", "get-evidence", "hugenetgwas");
 			if ($what == "json") {
 				$filename = $user['username'];
 				if ($job['processed'])
@@ -403,7 +406,7 @@ class Results extends Controller {
 				header ("Content-type: text/json");
 				header ("Content-disposition: attachment; filename=\"{$filename}\"");
 				$data['variants'] = array();
-				foreach ($xref_sections as $section) {
+				foreach ($this->xref_sections as $section) {
 				  if (array_key_exists ($section, $data['phenotypes'])) {
 				    foreach ($data['phenotypes'][$section] as $x) {
 				      $x['database'] = $section;
@@ -416,19 +419,7 @@ class Results extends Controller {
 			}
 			else
 			{
-				foreach ($data['phenotypes'] as $section => &$results) {
-					if (is_array ($results) &&
-					    in_array ($section, $xref_sections)) {
-						error_log ("pruning $section");
-						$new_results = array();
-						foreach ($results as $r) {
-							if (!is_array ($r) || !array_key_exists ("display_flag", $r) || $r["display_flag"]) {
-								$new_results[] = $r;
-							}
-						}
-						$results = $new_results;
-					}
-				}
+				$this->_filter_results ($data);
 				$this->load->view ('results', $data);
 			}
 			return;
@@ -476,6 +467,24 @@ class Results extends Controller {
 		header("Content-disposition: attachment; filename=\"{$filename}\"");
 		warehouse_readfile($data_file_path);
 	}
+
+	function &_filter_results (&$data)
+	{
+		foreach ($data['phenotypes'] as $section => &$results) {
+			if (is_array ($results) &&
+			    in_array ($section, $this->xref_sections)) {
+				$new_results = array();
+				foreach ($results as $r) {
+					if (!is_array ($r) || !array_key_exists ("display_flag", $r) || $r["display_flag"]) {
+						$new_results[] = $r;
+					}
+				}
+				$results = $new_results;
+			}
+		}
+		return $data;
+	}
+
 	
 	// note that invoking this function incorrectly may permit bypassing
 	// password restrictions
